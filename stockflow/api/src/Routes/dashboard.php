@@ -64,53 +64,90 @@ use StockFlow\Middleware\AuthMiddleware;
 // STUB: Returns placeholder data until students implement Exercise 7.
 // Replace the body of this route with your own logic.
 $app->get('/api/dashboard/summary', function (Request $request, Response $response) {
+$auth = new SupabaseAuth();
+$auth->setToken($request->getAttribute('token'));
 
-    // TODO: Replace this placeholder with real data from Supabase
-    //
-    // $auth = new SupabaseAuth();
-    // $auth->setToken($request->getAttribute('token'));
-    //
-    // TODO: Fetch products and orders from Supabase
-    //
-    // TODO: Calculate inventory stats
-    // $totalValue = 0;
-    // $lowStock = [];
-    // $outOfStock = 0;
-    // foreach ($products as $product) { ... }
-    //
-    // TODO: Calculate order stats
-    // $ordersByStatus = ['draft' => 0, 'confirmed' => 0, ...];
-    // $revenue = 0;
-    // foreach ($orders as $order) { ... }
-    //
-    // TODO: Sort low stock products by urgency (lowest stock first)
-    // usort($lowStock, function ($a, $b) {
-    //     return $a['stock_quantity'] - $b['stock_quantity'];
-    // });
+// Fetch data
+$products = $auth->query('products', ['select' => '*']);
+$orders = $auth->query('orders', ['select' => '*']);
 
-    // Placeholder response — shows the structure students need to build
-    $placeholder = [
-        'inventory' => [
-            'total_products' => 0,
-            'total_value' => 0.00,
-            'low_stock_count' => 0,
-            'out_of_stock_count' => 0
-        ],
-        'orders' => [
-            'total_orders' => 0,
-            'by_status' => [
-                'draft' => 0,
-                'confirmed' => 0,
-                'fulfilled' => 0,
-                'cancelled' => 0
-            ],
-            'total_revenue' => 0.00
-        ],
-        'low_stock_products' => [],
-        '_message' => 'Exercise 7: Replace this placeholder with real calculations!'
+if (!$products) $products = [];
+if (!$orders) $orders = [];
+
+// INVENTORY
+$totalProducts = count($products);
+
+$totalValue = array_sum(array_map(function ($p) {
+    return (float)$p['price'] * (int)$p['stock_quantity'];
+}, $products));
+
+$lowStock = array_filter($products, function ($p) {
+    return $p['stock_quantity'] > 0 &&
+           $p['stock_quantity'] <= $p['reorder_threshold'];
+});
+
+$outOfStock = array_filter($products, function ($p) {
+    return $p['stock_quantity'] == 0;
+});
+
+// ORDERS
+$totalOrders = count($orders);
+
+$byStatus = [
+    'draft' => 0,
+    'confirmed' => 0,
+    'fulfilled' => 0,
+    'cancelled' => 0
+];
+
+$totalRevenue = 0;
+
+foreach ($orders as $o) {
+    if (isset($byStatus[$o['status']])) {
+        $byStatus[$o['status']]++;
+    }
+
+    if ($o['status'] === 'fulfilled') {
+        $totalRevenue += (float)$o['total_amount'];
+    }
+}
+
+// LOW STOCK LIST
+$lowStockProducts = array_values(array_filter($products, function ($p) {
+    return $p['stock_quantity'] <= $p['reorder_threshold'];
+}));
+
+usort($lowStockProducts, function ($a, $b) {
+    return $a['stock_quantity'] - $b['stock_quantity'];
+});
+
+$lowStockProducts = array_slice($lowStockProducts, 0, 5);
+
+$lowStockProducts = array_map(function ($p) {
+    return [
+        'name' => $p['name'],
+        'stock_quantity' => (int)$p['stock_quantity'],
+        'reorder_threshold' => (int)$p['reorder_threshold']
     ];
+}, $lowStockProducts);
 
-    $response->getBody()->write(json_encode($placeholder));
-    return $response->withHeader('Content-Type', 'application/json');
+// FINAL RESPONSE
+$data = [
+    'inventory' => [
+        'total_products' => $totalProducts,
+        'total_value' => round($totalValue, 2),
+        'low_stock_count' => count($lowStock),
+        'out_of_stock_count' => count($outOfStock),
+    ],
+    'orders' => [
+        'total_orders' => $totalOrders,
+        'by_status' => $byStatus,
+        'total_revenue' => round($totalRevenue, 2),
+    ],
+    'low_stock_products' => $lowStockProducts
+];
+
+$response->getBody()->write(json_encode($data));
+return $response->withHeader('Content-Type', 'application/json');
 
 })->add(new AuthMiddleware());

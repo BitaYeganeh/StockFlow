@@ -13,7 +13,7 @@ php -S localhost:8005 -t public/
 ```bash
 cd stockflow/client/@
 npm install                # Install dependencies (first time only)
-npm run dev                # Starts on http://localhost:5174
+npm run dev                # Starts on http://localhost:5173
 ```
 
 ### 3. Check Supabase RLS policies
@@ -128,15 +128,26 @@ After fetching products from Supabase, loop through them and add:
 
 **PHP hint:**
 ```php
+<?php
 $processed = array_map(function ($product) {
     return [
         'id' => $product['id'],
         'name' => $product['name'],
-        'image_url' => $product['image_url'],
-        // ... add your fields here
+        'sku' => $product['sku'],
+        'price' => number_format((float)$product['price'], 2),
+        'description' => $product['description'] ?? '',
+        'stock_quantity' => $product['stock_quantity'],
+        'category_name' => $product['categories']['name'] ?? 'Uncategorized',
+        'category_id' => $product['category_id'] ?? null,
+        'image_url' => $product['image_url'] ?? null,
+        'status' => $product['status'],
+        'stock_status' => $product['stock_quantity'] == 0 
+            ? 'out_of_stock' 
+            : ($product['stock_quantity'] <= $product['reorder_threshold'] 
+                ? 'low_stock' 
+                : 'in_stock'),
     ];
 }, $products);
-```
 
 **Test it:** Check the Products tab — the Status column should show colored labels.
 

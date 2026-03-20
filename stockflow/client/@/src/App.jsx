@@ -82,14 +82,17 @@ function App() {
     <div>
       {/* Header with auth controls */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <h1 style={{ margin: 0 }}>StockFlow</h1>
+        <h1 className="rainbow-text">StockFlow</h1>
         <div>
           {user ? (
             <span>
               {user.email}{' '}
-              <button onClick={handleLogout} style={{ marginLeft: '10px' }}>
-                Sign out
-              </button>
+      <button
+          onClick={handleLogout}
+          className="signout-button"
+            >
+            Sign Out
+      </button>               
             </span>
           ) : (
             <Login />
@@ -98,7 +101,7 @@ function App() {
       </div>
 
       {/* Tab navigation */}
-      <nav style={{ display: 'flex', gap: '5px', marginBottom: '20px', flexWrap: 'wrap' }}>
+      <nav style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
         {visibleTabs.map((tab) => (
           <button
             key={tab.id}
@@ -113,14 +116,25 @@ function App() {
         ))}
       </nav>
 
-      {/* Tab content */}
-      {activeTab === 'products' && <ProductList />}
-      {activeTab === 'new-product' && <ProductForm onSaved={() => setActiveTab('products')} />}
-      {activeTab === 'orders' && <OrderList />}
-      {activeTab === 'new-order' && <OrderForm onCreated={() => setActiveTab('orders')} />}
-      {activeTab === 'stock' && <StockMovements />}
-      {activeTab === 'ai' && <AIPanel />}
-      {activeTab === 'dashboard' && <Dashboard />}
+{/* Tab content */}
+<div
+  style={{
+    padding: '20px',
+    backgroundColor: '#fdfdfd', // off-white background
+    borderRadius: '8px',
+    boxShadow: '0 2px 8px #1abc9c',
+    marginBottom: '20px',
+    transition: 'all 0.3s ease',
+  }}
+  >
+  {activeTab === 'products' && <ProductList />}
+  {activeTab === 'new-product' && <ProductForm onSaved={() => setActiveTab('products')} />}
+  {activeTab === 'orders' && <OrderList />}
+  {activeTab === 'new-order' && <OrderForm onCreated={() => setActiveTab('orders')} />}
+  {activeTab === 'stock' && <StockMovements />}
+  {activeTab === 'ai' && <AIPanel />}
+  {activeTab === 'dashboard' && <Dashboard />}
+  </div>
     </div>
   );
 }

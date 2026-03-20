@@ -88,22 +88,55 @@ class SupabaseAuth
      * Query a table. Identical to the original.
      * RLS still works — Supabase reads the Bearer token to filter rows.
      */
-    public function query(string $table, array $params = []): array
-    {
-        $queryString = '';
-        if (!empty($params)) {
-            // Build query string manually — http_build_query encodes characters
-            // like *, (, ) and , which Supabase needs unencoded in its filter syntax
-            $parts = [];
-            foreach ($params as $key => $value) {
-                $parts[] = urlencode($key) . '=' . $value;
-            }
-            $queryString = '?' . implode('&', $parts);
+public function query(string $table, array $params = [], bool $withCount = false): array
+{
+    $queryString = '';
+    if (!empty($params)) {
+        $parts = [];
+        foreach ($params as $key => $value) {
+            $parts[] = urlencode($key) . '=' . $value;
         }
-
-        return $this->makeRequest('GET', '/rest/v1/' . $table . $queryString);
+        $queryString = '?' . implode('&', $parts);
     }
 
+    $headers = [
+        'apikey: ' . $this->supabaseKey,
+        'Content-Type: application/json',
+    ];
+
+    if ($this->accessToken) {
+        $headers[] = 'Authorization: Bearer ' . $this->accessToken;
+    }
+
+    // 🔥 THIS enables count
+    if ($withCount) {
+        $headers[] = 'Prefer: count=exact';
+    }
+
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $this->supabaseUrl . '/rest/v1/' . $table . $queryString,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_CUSTOMREQUEST => 'GET',
+        CURLOPT_HEADER => true, // 🔥 IMPORTANT
+    ]);
+
+    $response = curl_exec($ch);
+    $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+    $headersRaw = substr($response, 0, $headerSize);
+    $body = substr($response, $headerSize);
+
+    preg_match('/content-range:.*\/(\d+)/i', $headersRaw, $matches);
+    $total = isset($matches[1]) ? (int)$matches[1] : null;
+
+    $decoded = json_decode($body, true) ?? [];
+
+    return [
+        'data' => $decoded,
+        'total' => $total
+    ];
+}
     /** Insert into a table. Identical to the original. */
     public function insert(string $table, array $data): array
     {

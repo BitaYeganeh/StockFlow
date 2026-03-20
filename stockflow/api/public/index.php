@@ -1,38 +1,60 @@
 <?php
-
 require __DIR__ . '/../vendor/autoload.php';
 use Slim\Factory\AppFactory;
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
 $app = AppFactory::create();
 
+// ------------------------
+// Middlewares
+// ------------------------
 $app->addBodyParsingMiddleware();
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
-// CORS middleware handling
-$app->options('/{routes:.+}', function ($request, $response) {
+// ✅ CORS middleware
+$app->add(function ($request, $handler) {
+    $response = $handler->handle($request);
+
+    $origin = $_ENV['CLIENT_URL'] ?? 'http://localhost:5173';
+
+    $response = $response
+        ->withHeader('Access-Control-Allow-Origin', $origin)
+        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+
+    // If this is a preflight request, return 200 immediately
+    if ($request->getMethod() === 'OPTIONS') {
+        return $response->withStatus(200);
+    }
+
     return $response;
 });
 
-$app->add(function ($request, $handler) {
-    $response = $handler->handle($request);
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', $_ENV['CLIENT_URL'] ?? '*')
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-});
-
+// ------------------------
 // Routes
+// ------------------------
 require __DIR__ . '/../src/Routes/auth.php';
 require __DIR__ . '/../src/Routes/products.php';
 require __DIR__ . '/../src/Routes/orders.php';
 require __DIR__ . '/../src/Routes/stock.php';
 require __DIR__ . '/../src/Routes/ai.php';
 require __DIR__ . '/../src/Routes/dashboard.php';
-// Reference: src/Routes/_route_examples.php (not loaded — read it to learn the patterns)
 
-// Slim reads the URL and HTTP method and finds the matching route. Runs any middleware, and sends the response.
+// Redirect root to frontend
+$app->get('/', function ($request, $response) {
+    $frontendUrl = $_ENV['CLIENT_URL'] ?? 'http://localhost:5173';
+    return $response
+        ->withHeader('Location', $frontendUrl)
+        ->withStatus(302);
+});
+
+// ------------------------
+// Run the app
+// ------------------------
 $app->run();

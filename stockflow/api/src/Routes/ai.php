@@ -46,32 +46,55 @@ $app->post('/api/ai/describe', function (Request $request, Response $response) {
 
     // $body = $request->getParsedBody();
     // $productId = $body['product_id'] ?? null;
-    //
-    // TODO: Validate product_id
-    //
-    // TODO: Fetch the product from Supabase
-    // $auth = new SupabaseAuth();
-    // $auth->setToken($request->getAttribute('token'));
-    // $products = $auth->query('products', [
-    //     'id' => 'eq.' . $productId,
-    //     'select' => '*,categories(name)'
-    // ]);
-    //
-    // TODO: Build a prompt using the product data
-    // TODO: Send to Gemini and return the result
-    //
-    // try {
-    //     $ai = new GeminiAI();
-    //     $description = $ai->ask($prompt);
-    //     ...return JSON response with the description
-    // } catch (\Exception $e) {
-    //     ...return 500 error with message
-    // }
 
-    $response->getBody()->write(json_encode([
-        'error' => 'Exercise 8: POST /api/ai/describe is not implemented yet'
-    ]));
-    return $response->withStatus(501)->withHeader('Content-Type', 'application/json');
+    $auth = new SupabaseAuth();
+    $auth->setToken($request->getAttribute('token'));
+
+    $body = $request->getParsedBody();
+    $productId = $body['product_id'] ?? null;
+
+    // TODO: Validate product_id
+    if (!$productId) {
+        $response->getBody()->write(json_encode(['error' => 'Missing product_id']));
+        return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
+    }
+
+    // TODO: Fetch the product from Supabase
+    $products = $auth->query('products', [
+        'id' => 'eq.' . $productId,
+        'select' => '*,categories!category_id(name)'
+    ]);
+
+    if (!$products || count($products) === 0) {
+        $response->getBody()->write(json_encode(['error' => 'Product not found']));
+        return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
+    }
+
+    $product = $products[0];
+
+    // TODO: Build a prompt using the product data
+    $prompt = "Write a short 2-3 sentence product description for:
+Name: {$product['name']}
+Category: " . ($product['categories']['name'] ?? 'General') . "
+Price: {$product['price']} EUR";
+
+    // TODO: Send to Gemini and return the result
+    try {
+        $ai = new GeminiAI();
+        $description = $ai->ask($prompt);
+
+        $response->getBody()->write(json_encode([
+            'description' => $description
+        ]));
+
+        return $response->withHeader('Content-Type', 'application/json');
+
+    } catch (\Exception $e) {
+        $response->getBody()->write(json_encode([
+            'error' => $e->getMessage()
+        ]));
+        return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+    }
 
 })->add(new AuthMiddleware());
 
@@ -85,33 +108,58 @@ $app->post('/api/ai/describe', function (Request $request, Response $response) {
 //
 // Your route should:
 //   1. Fetch products where stock_quantity <= reorder_threshold
-//      (hint: you may need to fetch all products and filter in PHP,
-//       or use Supabase filter syntax)
 //   2. Build a prompt with the low-stock products list
 //   3. Ask Gemini for reorder recommendations
 //   4. Return the AI advice plus the product data
-//
-// Example prompt:
-//   "These products are running low on stock. For each, suggest a
-//    reorder quantity based on the current stock and threshold:
-//    - Wireless Earbuds Pro: 5 in stock, threshold: 15
-//    - USB-C Hub Pro: 2 in stock, threshold: 10
-//    Give a brief recommendation for each."
 // ============================================================
 
-// STUB: Returns "not implemented" until students implement Exercise 8 (Step 2).
 $app->post('/api/ai/stock-advice', function (Request $request, Response $response) {
 
     // TODO: Fetch all products
-    // TODO: Filter to only those with stock_quantity <= reorder_threshold
-    // TODO: Build prompt with the low-stock items
-    // TODO: Ask Gemini for advice
-    // TODO: Return the advice and product data
+    $auth = new SupabaseAuth();
+    $auth->setToken($request->getAttribute('token'));
 
-    $response->getBody()->write(json_encode([
-        'error' => 'Exercise 8: POST /api/ai/stock-advice is not implemented yet'
-    ]));
-    return $response->withStatus(501)->withHeader('Content-Type', 'application/json');
+    $products = $auth->query('products', ['select' => '*']);
+    if (!$products) $products = [];
+
+    // TODO: Filter to only those with stock_quantity <= reorder_threshold
+    $lowStock = array_filter($products, function ($p) {
+        return $p['stock_quantity'] <= $p['reorder_threshold'];
+    });
+
+    if (count($lowStock) === 0) {
+        $response->getBody()->write(json_encode([
+            'message' => 'No low stock products'
+        ]));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    // TODO: Build prompt with the low-stock items
+    $prompt = "These products are running low on stock. Suggest reorder quantities:\n";
+
+    foreach ($lowStock as $p) {
+        $prompt .= "- {$p['name']}: {$p['stock_quantity']} in stock, threshold: {$p['reorder_threshold']}\n";
+    }
+
+    // TODO: Ask Gemini for advice
+    try {
+        $ai = new GeminiAI();
+        $advice = $ai->ask($prompt);
+
+        // TODO: Return the advice and product data
+        $response->getBody()->write(json_encode([
+            'advice' => $advice,
+            'products' => array_values($lowStock)
+        ]));
+
+        return $response->withHeader('Content-Type', 'application/json');
+
+    } catch (\Exception $e) {
+        $response->getBody()->write(json_encode([
+            'error' => $e->getMessage()
+        ]));
+        return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+    }
 
 })->add(new AuthMiddleware());
 
@@ -119,27 +167,57 @@ $app->post('/api/ai/stock-advice', function (Request $request, Response $respons
 // ============================================================
 // POST /api/ai/summarize-orders — Summarize recent orders
 // ============================================================
-// EXERCISE 6 (Step 3 — Stretch): Students build this route
-//
-// Fetch recent orders and ask Gemini to summarize trends.
-//
-// Your route should:
-//   1. Fetch orders from the last 7 days
-//   2. Build a prompt with order data (customer, total, status)
-//   3. Ask Gemini to identify patterns and summarize
-//   4. Return the summary
-//
-// This combines Exercise 3 (date handling) with Exercise 8 (AI).
+// EXERCISE 6 (Step 3 — Stretch)
 // ============================================================
 
-// STUB: Returns "not implemented" until students implement Exercise 8 (Step 3).
 $app->post('/api/ai/summarize-orders', function (Request $request, Response $response) {
 
-    // TODO: Implement this route
+    $auth = new SupabaseAuth();
+    $auth->setToken($request->getAttribute('token'));
 
-    $response->getBody()->write(json_encode([
-        'error' => 'Exercise 8: POST /api/ai/summarize-orders is not implemented yet'
-    ]));
-    return $response->withStatus(501)->withHeader('Content-Type', 'application/json');
+    // TODO: Fetch orders
+    $orders = $auth->query('orders', ['select' => '*']);
+    if (!$orders) $orders = [];
+
+    // TODO: Filter last 7 days
+    $sevenDaysAgo = date('Y-m-d', strtotime('-7 days'));
+
+    $recentOrders = array_filter($orders, function ($o) use ($sevenDaysAgo) {
+        return substr($o['created_at'], 0, 10) >= $sevenDaysAgo;
+    });
+
+    if (count($recentOrders) === 0) {
+        $response->getBody()->write(json_encode([
+            'message' => 'No recent orders'
+        ]));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    // TODO: Build prompt
+    $prompt = "Summarize these recent orders and identify trends:\n";
+
+    foreach ($recentOrders as $o) {
+        $prompt .= "- Order {$o['id']}, Total: {$o['total_amount']}, Status: {$o['status']}\n";
+    }
+
+    // TODO: Ask Gemini
+    try {
+        $ai = new GeminiAI();
+        $summary = $ai->ask($prompt);
+
+        // TODO: Return summary
+        $response->getBody()->write(json_encode([
+            'summary' => $summary,
+            'orders' => array_values($recentOrders)
+        ]));
+
+        return $response->withHeader('Content-Type', 'application/json');
+
+    } catch (\Exception $e) {
+        $response->getBody()->write(json_encode([
+            'error' => $e->getMessage()
+        ]));
+        return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+    }
 
 })->add(new AuthMiddleware());

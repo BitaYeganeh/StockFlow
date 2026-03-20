@@ -1,42 +1,45 @@
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
 
-/**
- * OrderList — Displays orders from the API
- *
- * WHAT THIS COMPONENT DOES:
- * - Fetches orders from GET /api/orders
- * - Shows them in a table with date and status
- * - Has a status filter dropdown
- *
- * WHAT STUDENTS NEED TO DO ON THE BACKEND:
- * - Exercise 3: Format dates (created_date, created_ago fields)
- * - Exercise 5: Build the status update and create endpoints
- */
 export default function OrderList() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
 
-  const fetchOrders = () => {
-    setLoading(true);
-    const params = {};
-    if (statusFilter) params.status = statusFilter;
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      setError(null);
 
-    api.getOrders(params)
-      .then((data) => setOrders(Array.isArray(data) ? data : data.data || []))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  };
+      try {
+        const params = {};
+        if (statusFilter) params.status = statusFilter;
+        const data = await api.getOrders(params);
+        if (Array.isArray(data)) setOrders(data);
+        else if (data && Array.isArray(data.data)) setOrders(data.data);
+        else setOrders([]);
+      } catch (err) {
+        setError(err.message || 'Failed to fetch orders');
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  useEffect(() => { fetchOrders(); }, [statusFilter]);
+    fetchOrders();
+  }, [statusFilter]);
 
-  // Status update handler — calls PUT /api/orders/{id}/status (Exercise 5)
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await api.updateOrderStatus(orderId, newStatus);
-      fetchOrders(); // Refresh the list
+      // Refresh the list
+      const params = {};
+      if (statusFilter) params.status = statusFilter;
+      const data = await api.getOrders(params);
+      if (Array.isArray(data)) setOrders(data);
+      else if (data && Array.isArray(data.data)) setOrders(data.data);
+      else setOrders([]);
     } catch (err) {
       alert('Error: ' + err.message);
     }
@@ -52,7 +55,6 @@ export default function OrderList() {
   return (
     <div>
       <h2>Orders</h2>
-
       <div style={{ marginBottom: '15px' }}>
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
           <option value="">All Statuses</option>
@@ -88,16 +90,9 @@ export default function OrderList() {
                   </span>
                 </td>
                 <td>{order.total_amount}</td>
-                {/*
-                  Exercise 3: The backend should return formatted date fields:
-                  - 'created_date': formatted date string (e.g., "9 Mar 2026, 14:30")
-                  - 'created_ago': relative time (e.g., "2 days ago")
-                  Until students implement this, it falls back to raw created_at
-                */}
                 <td>{order.created_date || order.created_at}</td>
                 <td>{order.created_ago || '—'}</td>
                 <td>
-                  {/* Exercise 5: Status transitions — backend validates which are allowed */}
                   {order.status === 'draft' && (
                     <>
                       <button onClick={() => handleStatusChange(order.id, 'confirmed')}>Confirm</button>

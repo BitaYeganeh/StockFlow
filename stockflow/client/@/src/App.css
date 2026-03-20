@@ -27,3 +27,53 @@ input:focus, select:focus, textarea:focus {
   outline: 2px solid #646cff;
   border-color: transparent;
 }
+/* in App.css or your global CSS file */
+.rainbow-text {
+  font-size: 4.2rem; /* adjust as needed */
+  font-weight: bold;
+  margin: 0;
+  background: linear-gradient(90deg, red, rgb(234, 173, 58), yellow, #1abc9c, rgb(65, 169, 224));
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rainbow 5s linear infinite;
+}
+
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.signout-button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  background: #1abc9c;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.signout-button:hover {
+  background: red;
+  color: #fff;
+}
+
+/* Reusable auth button style */
+.auth-button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  background: #1abc9c;      /* Base color */
+  color: #fff;
+  border-color: #646cff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+/* Hover effect — turns red */
+.auth-button:hover {
+  background: red;
+  color: #fff;
+}

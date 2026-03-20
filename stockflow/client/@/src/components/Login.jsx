@@ -27,8 +27,8 @@ export default function Login() {
   };
 
   return (
-    <button onClick={handleLogin} disabled={loading}>
-      {loading ? 'Redirecting...' : 'Sign in with Google'}
+    <button onClick={handleLogin} className="auth-button">
+      Sign in with Google
     </button>
   );
 }
