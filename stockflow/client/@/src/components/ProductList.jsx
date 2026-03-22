@@ -39,7 +39,7 @@ const Pagination = ({ page, totalPages, setPage, limit, setLimit }) => {
             background: p === page ? '#1abc9c' : '#ecf0f1',
             color: p === page ? '#fff' : '#2c3e50',
             border: '1px solid #444',
-            padding: '5px 10px',
+            padding: '5px 10px'
           }}
         >
           {p}

@@ -29,8 +29,8 @@ $app->get('/api/orders', function (Request $request, Response $response) {
         $query['status'] = 'eq.' . $statusFilter;
     }
 
-    $orders = $auth->query('orders', $query);
-    if (!$orders || !is_array($orders)) $orders = [];
+    $result = $auth->query('orders', $query);
+    $orders = $result['data'] ?? [];
 
     $processed = array_map(function ($row) {
         $timestamp = strtotime($row['created_at']);
@@ -65,16 +65,18 @@ $app->get('/api/orders/{id}', function (Request $request, Response $response, ar
     $id = $args['id'];
     $auth = new SupabaseAuth();
 
-    $orders = $auth->query('orders', ['id' => 'eq.' . $id]);
-    if (!$orders || count($orders) === 0) {
-        $response->getBody()->write(json_encode(['error' => 'Order not found']));
+    $result = $auth->query('orders', ['id' => 'eq.' . $id]);
+    $orders = $result['data'] ?? [];    if (!$orders || count($orders) === 0) {
+        
+    $response->getBody()->write(json_encode(['error' => 'Order not found']));
         return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
     }
 
     $order = $orders[0];
 
     // Fetch items
-    $items = $auth->query('order_items', ['order_id' => 'eq.' . $id]);
+    $resultItems = $auth->query('order_items', ['order_id' => 'eq.' . $id]);
+    $items = $resultItems['data'] ?? [];
     if (!$items || !is_array($items)) $items = [];
 
     // Format items
@@ -184,8 +186,9 @@ $app->put('/api/orders/{id}/status', function (Request $request, Response $respo
         return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
     }
 
-    $orders = $auth->query('orders', ['id' => 'eq.' . $id]);
-    if (!$orders || count($orders) === 0) {
+    $result = $auth->query('orders', ['id' => 'eq.' . $id]);
+    $orders = $result['data'] ?? [];
+    if (count($orders) === 0) {
         $response->getBody()->write(json_encode(['error' => 'Order not found']));
         return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
     }

@@ -9,6 +9,10 @@ $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
 $app = AppFactory::create();
+$app->options('/{routes:.+}', function ($request, $response) {
+    return $response;
+});
+
 
 // ------------------------
 // Middlewares

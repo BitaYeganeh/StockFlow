@@ -305,13 +305,11 @@ export default function StockMovements({ onStockUpdate }) {
 
       {!loading && !error && movements.length === 0 && (
         <div style={{
-          textAlign: 'center',
-          padding: '10px',
-          marginBottom: '15px',
-          border: '10px dashed #1abc9c; ',
-          borderRadius: '80px',
-          color: '#aaa'
-        }}>
+                  height: '3px',          // line thickness
+                  backgroundColor: '#1abc9c', // line color
+                  margin: '15px 0'
+                }}>
+                
           
         </div>
       )}
