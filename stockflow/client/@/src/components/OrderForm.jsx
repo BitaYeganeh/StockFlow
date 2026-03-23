@@ -111,15 +111,43 @@ export default function OrderForm({ onCreated = () => {} }) {
   };
 
   return (
-    <div>
-      <h3>New Order</h3>
+    <div style={{ maxWidth: '700px', margin: '0 auto', textAlign: 'center' }}>
+      {/* Rainbow Title */}
+      <h3
+        style={{
+          fontSize: '2rem',
+          fontWeight: 'bold',
+          background: 'linear-gradient(90deg, red, rgb(234, 173, 58), yellow, #1abc9c, rgb(65, 169, 224))',
+          backgroundSize: '400% 400%',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          animation: 'rainbow 5s linear infinite',
+          marginBottom: '20px',
+        }}
+      >
+        New Order
+      </h3>
 
       {/* --- Show success or error message --- */}
       {message && (
         <p style={{ color: message.type === 'error' ? 'red' : 'green' }}>{message.text}</p>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '600px' }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '15px',
+          maxWidth: '400px',
+          margin: '0 auto',
+          padding: '20px',
+          borderRadius: '12px',
+          border: '1px solid black',
+          backgroundColor: '#f9f9f9',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        }}
+      >
         {/* Customer name input */}
         <input
           placeholder="Customer name *"
@@ -136,11 +164,21 @@ export default function OrderForm({ onCreated = () => {} }) {
           rows={2}
         />
 
-        <h4>Items</h4>
+        <h4 style={{ borderBottom: '2px solid #075751', paddingBottom: '5px', marginBottom: '10px' }}>Items</h4>
 
         {/* Line items */}
         {items.map((item, i) => (
-          <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              gap: '8px',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              marginBottom: '5px',
+            }}
+          >
             {/* Product dropdown */}
             <select
               value={item.product_id}
@@ -149,7 +187,9 @@ export default function OrderForm({ onCreated = () => {} }) {
             >
               <option value="">Select product...</option>
               {products.map((p) => (
-                <option key={p.id} value={p.id}>{p.name} ({p.price})</option>
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.price})
+                </option>
               ))}
             </select>
 
@@ -166,21 +206,57 @@ export default function OrderForm({ onCreated = () => {} }) {
             <span>{(item.quantity * item.unit_price).toFixed(2)}</span>
 
             {/* Remove button */}
-            <button type="button" onClick={() => removeItem(i)}>x</button>
+            <button
+              type="button"
+              style={{
+                backgroundColor: 'red',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '3px 8px',
+                cursor: 'pointer',
+              }}
+              onClick={() => removeItem(i)}
+            >
+              x
+            </button>
           </div>
         ))}
 
         {/* Add new line item */}
-        <button type="button" onClick={addItem}>+ Add Item</button>
+        <button
+          type="button"
+          className="auth-button"
+          style={{ width: 'fit-content', margin: '0 auto', display: 'block' }}
+          onClick={addItem}
+        >
+          + Add Item
+        </button>
 
         {/* Preview total */}
         <p><strong>Preview Total: {previewTotal.toFixed(2)}</strong></p>
 
         {/* Submit button */}
-        <button type="submit" disabled={saving}>
+        <button
+          type="submit"
+          className="auth-button"
+          disabled={saving}
+          style={{ width: '10rem', margin: '0 auto', display: 'block' }}
+        >
           {saving ? 'Creating...' : 'Create Order'}
         </button>
       </form>
+
+      {/* Rainbow animation keyframes */}
+      <style>
+        {`
+          @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+        `}
+      </style>
     </div>
   );
 }

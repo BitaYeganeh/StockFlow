@@ -35,51 +35,94 @@ export default function Dashboard() {
   const { inventory, orders, low_stock_products } = summary;
 
   return (
-    <div>
-      <h2>Dashboard</h2>
+    <div className="dashboard-container">
+
+      {/* 🌈 Dashboard Title */}
+      <h1 className="rainbow-text dashboard-title">
+        Dashboard
+      </h1>
 
       {/* Summary Cards */}
-      <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginBottom: '20px' }}>
-        <div style={{ padding: '15px', border: '1px solid #444', borderRadius: '8px', minWidth: '200px' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '15px',
+          flexWrap: 'wrap',
+          marginBottom: '20px',
+          justifyContent: 'center'
+        }}
+      >
+
+        {/* Inventory Card */}
+        <div className="dashboard-card">
           <h4>Inventory</h4>
+          <hr className="card-divider" />
+
           <p>Total Products: <strong>{inventory?.total_products || 0}</strong></p>
           <p>Total Value: <strong>{inventory?.total_value || '0.00'}</strong></p>
-          <p style={{ color: 'orange' }}>Low Stock: <strong>{inventory?.low_stock_count || 0}</strong></p>
-          <p style={{ color: 'red' }}>Out of Stock: <strong>{inventory?.out_of_stock_count || 0}</strong></p>
+          <p style={{ color: 'orange' }}>
+            Low Stock: <strong>{inventory?.low_stock_count || 0}</strong>
+          </p>
+          <p style={{ color: 'red' }}>
+            Out of Stock: <strong>{inventory?.out_of_stock_count || 0}</strong>
+          </p>
         </div>
 
-        <div style={{ padding: '15px', border: '1px solid #444', borderRadius: '8px', minWidth: '200px' }}>
+        {/* Orders Card */}
+        <div className="dashboard-card">
           <h4>Orders</h4>
+          <hr className="card-divider" />
+
           <p>Total Orders: <strong>{orders?.total_orders || 0}</strong></p>
           <p>Revenue: <strong>{orders?.total_revenue || '0.00'}</strong></p>
+
           {orders?.by_status && (
-            <div>
-              <p>Draft: {orders.by_status.draft || 0}</p>
-              <p>Confirmed: {orders.by_status.confirmed || 0}</p>
-              <p>Fulfilled: {orders.by_status.fulfilled || 0}</p>
-              <p>Cancelled: {orders.by_status.cancelled || 0}</p>
+            <div style={{ marginTop: '10px' }}>
+              <p className="status-draft">
+                Draft: {orders.by_status.draft || 0}
+              </p>
+              <p className="status-confirmed">
+                Confirmed: {orders.by_status.confirmed || 0}
+              </p>
+              <p className="status-fulfilled">
+                Fulfilled: {orders.by_status.fulfilled || 0}
+              </p>
+              <p className="status-cancelled">
+                Cancelled: {orders.by_status.cancelled || 0}
+              </p>
             </div>
           )}
         </div>
+
       </div>
 
       {/* Low Stock Alerts */}
       {low_stock_products && low_stock_products.length > 0 && (
         <div>
-          <h3>Low Stock Alerts</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', maxWidth: '500px' }}>
+          <h3 className="section-title">Low Stock Alerts</h3>
+
+          <table
+            style={{
+              margin: '0 auto',
+              borderCollapse: 'collapse',
+              width: '90%',
+              maxWidth: '500px',
+              textAlign: 'center'
+            }}
+          >
             <thead>
               <tr style={{ borderBottom: '2px solid #555' }}>
-                <th>Product</th>
-                <th>Stock</th>
-                <th>Threshold</th>
+                <th className="rainbow-header">Product</th>
+                <th className="rainbow-header">Stock</th>
+                <th className="rainbow-header">Threshold</th>
               </tr>
             </thead>
+
             <tbody>
               {low_stock_products.map((p, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid #333' }}>
                   <td>{p.name}</td>
-                  <td style={{ color: p.stock_quantity === 0 ? 'red' : 'orange' }}>
+                  <td className={p.stock_quantity === 0 ? 'status-cancelled' : 'status-confirmed'}>
                     {p.stock_quantity}
                   </td>
                   <td>{p.reorder_threshold}</td>
