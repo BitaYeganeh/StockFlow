@@ -11,23 +11,15 @@ export default function OrderList() {
     const fetchOrders = async () => {
       setLoading(true);
       setError(null);
-
       try {
         const params = {};
         if (statusFilter) params.status = statusFilter;
 
-        // Fetch orders from API
         const data = await api.getOrders(params);
-
-        console.log('[OrderList] Fetched orders:', data); // DEBUG log
-
-        // Always use data.data if exists, otherwise fallback to empty array
         if (data && Array.isArray(data.data)) setOrders(data.data);
         else if (Array.isArray(data)) setOrders(data);
         else setOrders([]);
-
       } catch (err) {
-        console.error('[OrderList] Error fetching orders:', err);
         setError(err.message || 'Failed to fetch orders');
         setOrders([]);
       } finally {
@@ -39,22 +31,24 @@ export default function OrderList() {
   }, [statusFilter]);
 
   const handleStatusChange = async (orderId, newStatus) => {
+    let message = '';
+    if (newStatus === 'confirmed') message = 'Are you sure you want to CONFIRM this order?';
+    if (newStatus === 'cancelled') message = 'Are you sure you want to CANCEL this order?';
+    if (newStatus === 'fulfilled') message = 'Are you sure you want to FULFILL this order?';
+
+    if (message && !window.confirm(message)) return; // ✅ confirmation alert
+
     try {
       await api.updateOrderStatus(orderId, newStatus);
 
-      // Refresh the list after status change
+      // Refresh orders after status change
       const params = {};
       if (statusFilter) params.status = statusFilter;
-
       const data = await api.getOrders(params);
-      console.log('[OrderList] Orders after status update:', data); // DEBUG log
-
       if (data && Array.isArray(data.data)) setOrders(data.data);
       else if (Array.isArray(data)) setOrders(data);
       else setOrders([]);
-
     } catch (err) {
-      console.error('[OrderList] Error updating status:', err);
       alert('Error: ' + err.message);
     }
   };
@@ -67,10 +61,23 @@ export default function OrderList() {
   };
 
   return (
-    <div>
-      <h2>Orders</h2>
-      <div style={{ marginBottom: '15px' }}>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+    <div className="dashboard-container" style={{ textAlign: 'center' }}>
+      <h1 className="rainbow-text-title">Orders</h1>
+
+      {/* Status Filter */}
+      <div style={{ marginBottom: '20px' }}>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{
+            padding: '6px 12px',
+            borderRadius: '6px',
+            border: '1px solid #555',
+            backgroundColor: 'inherit',
+            color: 'inherit',
+            fontSize: '0.95em'
+          }}
+        >
           <option value="">All Statuses</option>
           <option value="draft">Draft</option>
           <option value="confirmed">Confirmed</option>
@@ -79,14 +86,22 @@ export default function OrderList() {
         </select>
       </div>
 
+      {/* Loading/Error */}
       {loading && <p>Loading orders...</p>}
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
+      {/* Orders Table */}
       {!loading && !error && orders.length > 0 && (
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <table style={{
+          width: '100%',
+          borderCollapse: 'collapse',
+          textAlign: 'left',
+          margin: '0 auto',
+          maxWidth: '900px'
+        }}>
           <thead>
-            <tr style={{ borderBottom: '2px solid #555' }}>
-              <th>Customer</th>
+            <tr style={{ borderBottom: '2px solid #555', backgroundColor: '#dff1ef' }}>
+              <th style={{ padding: '10px' }}>Customer</th>
               <th>Status</th>
               <th>Total</th>
               <th>Created</th>
@@ -97,26 +112,51 @@ export default function OrderList() {
           <tbody>
             {orders.map((order) => (
               <tr key={order.id} style={{ borderBottom: '1px solid #333' }}>
-                <td>{order.customer_name}</td>
+                <td style={{ padding: '8px 12px' }}>{order.customer_name}</td>
                 <td>
-                  <span style={{ color: statusColors[order.status] || '#888' }}>
+                  <span style={{ color: statusColors[order.status] || '#888', fontWeight: 'bold' }}>
                     {order.status}
                   </span>
                 </td>
                 <td>{order.total_amount}</td>
                 <td>{order.created_date || order.created_at}</td>
                 <td>{order.created_ago || '—'}</td>
-                <td>
+                <td style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {order.status === 'draft' && (
                     <>
-                      <button onClick={() => handleStatusChange(order.id, 'confirmed')}>Confirm</button>
-                      <button onClick={() => handleStatusChange(order.id, 'cancelled')}>Cancel</button>
+                      <button
+                        className="auth-button"
+                        style={{ backgroundColor: '#4488ff' }}
+                        onClick={() => handleStatusChange(order.id, 'confirmed')}
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        className="auth-button"
+                        style={{ backgroundColor: '#cc4444' }}
+                        onClick={() => handleStatusChange(order.id, 'cancelled')}
+                      >
+                        Cancel
+                      </button>
                     </>
                   )}
+
                   {order.status === 'confirmed' && (
                     <>
-                      <button onClick={() => handleStatusChange(order.id, 'fulfilled')}>Fulfill</button>
-                      <button onClick={() => handleStatusChange(order.id, 'cancelled')}>Cancel</button>
+                      <button
+                        className="auth-button"
+                        style={{ backgroundColor: '#44bb44' }}
+                        onClick={() => handleStatusChange(order.id, 'fulfilled')}
+                      >
+                        Fulfill
+                      </button>
+                      <button
+                        className="auth-button"
+                        style={{ backgroundColor: '#cc4444' }}
+                        onClick={() => handleStatusChange(order.id, 'cancelled')}
+                      >
+                        Cancel
+                      </button>
                     </>
                   )}
                 </td>
@@ -126,7 +166,9 @@ export default function OrderList() {
         </table>
       )}
 
-      {!loading && !error && orders.length === 0 && <p>No orders found.</p>}
+      {!loading && !error && orders.length === 0 && (
+        <p style={{ marginTop: '20px', fontStyle: 'italic', color: '#555' }}>No orders found.</p>
+      )}
     </div>
   );
 }

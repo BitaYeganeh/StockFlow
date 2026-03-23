@@ -38,7 +38,7 @@ export default function Dashboard() {
     <div className="dashboard-container">
 
       {/* 🌈 Dashboard Title */}
-      <h1 className="rainbow-text dashboard-title">
+      <h1 className="rainbow-text-title">
         Dashboard
       </h1>
 

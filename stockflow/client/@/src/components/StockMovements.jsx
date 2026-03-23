@@ -139,7 +139,7 @@ export default function StockMovements({ onStockUpdate }) {
       setTimeout(() => {
         fetchProducts();
         fetchMovements();
-      }, 300);
+      }, 5000);
 
       // Reset form
       setForm({
@@ -163,28 +163,27 @@ export default function StockMovements({ onStockUpdate }) {
 
   return (
     <div>
-      <h2>Stock Movements</h2>
+      <h2 className="rainbow-text-title">Stock Movements</h2>
 
       {/* =========================
           MESSAGE BOX
       ========================= */}
       {message && (
-<div style={{
-  marginBottom: '15px',
-  padding: '12px',
-  borderRadius: '6px',
-  background: message.type === 'error' ? '#2c1f1f' : '#1f2c1f',
-  border: '1px solid #444',
-  // Rainbow text styles
-  backgroundImage: message.type === 'error'
-    ? 'linear-gradient(90deg, #e391cf, #036053)'
-    : 'linear-gradient(90deg, #e9190e, #f1c40f, #1abc9c)',
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  fontWeight: 'bold'
-}}>
-  {message.text}
-</div>
+        <div style={{
+          marginBottom: '15px',
+          padding: '12px',
+          borderRadius: '6px',
+          background: message.type === 'error' ? '#2c1f1f' : '#1f2c1f',
+          border: '1px solid #444',
+          backgroundImage: message.type === 'error'
+            ? 'linear-gradient(90deg, #e391cf, #036053)'
+            : 'linear-gradient(90deg, #e9190e, #f1c40f, #1abc9c)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          fontWeight: 'bold'
+        }}>
+          {message.text}
+        </div>
       )}
 
       {/* =========================
@@ -214,7 +213,6 @@ export default function StockMovements({ onStockUpdate }) {
             required
           >
             <option value="">Select product...</option>
-
             {products.map(p => (
               <option key={p.id} value={p.id}>
                 {p.name} (stock: {p.stock_quantity})
@@ -271,6 +269,8 @@ export default function StockMovements({ onStockUpdate }) {
         <table style={{
           width: '100%',
           borderCollapse: 'collapse',
+          backgroundColor: '#f9f9f9',
+          border: '1px solid #333',
           textAlign: 'left'
         }}>
           <thead>
@@ -287,13 +287,9 @@ export default function StockMovements({ onStockUpdate }) {
             {movements.map(m => (
               <tr key={m.id} style={{ borderBottom: '1px solid #333' }}>
                 <td>{m.product_name || '—'}</td>
-
-                <td style={{
-                  color: typeColors[m.movement_type] || '#888'
-                }}>
+                <td style={{ color: typeColors[m.movement_type] || '#888' }}>
                   {m.movement_type}
                 </td>
-
                 <td>{m.quantity}</td>
                 <td>{m.reason || '—'}</td>
                 <td>{m.created_ago || m.created_date || '—'}</td>
@@ -301,17 +297,6 @@ export default function StockMovements({ onStockUpdate }) {
             ))}
           </tbody>
         </table>
-      )}
-
-      {!loading && !error && movements.length === 0 && (
-        <div style={{
-                  height: '3px',          // line thickness
-                  backgroundColor: '#1abc9c', // line color
-                  margin: '15px 0'
-                }}>
-                
-          
-        </div>
       )}
     </div>
   );

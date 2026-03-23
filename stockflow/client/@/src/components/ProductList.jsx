@@ -3,7 +3,7 @@ import { api } from '../services/api';
 import StockMovements from './StockMovements';
 
 // =========================
-// Pagination
+// Pagination Component
 // =========================
 const Pagination = ({ page, totalPages, setPage, limit, setLimit }) => {
   const getPageNumbers = () => {
@@ -20,7 +20,7 @@ const Pagination = ({ page, totalPages, setPage, limit, setLimit }) => {
   };
 
   return (
-    <div style={{ margin: '15px 0', display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center' }}>
+    <div style={{ margin: '15px 0', display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
       <select value={limit} onChange={(e) => { setPage(1); setLimit(Number(e.target.value)); }}>
         <option value={10}>10 / page</option>
         <option value={25}>25 / page</option>
@@ -39,7 +39,9 @@ const Pagination = ({ page, totalPages, setPage, limit, setLimit }) => {
             background: p === page ? '#1abc9c' : '#ecf0f1',
             color: p === page ? '#fff' : '#2c3e50',
             border: '1px solid #444',
-            padding: '5px 10px'
+            padding: '5px 10px',
+            borderRadius: '6px',
+            cursor: 'pointer'
           }}
         >
           {p}
@@ -56,7 +58,7 @@ const Pagination = ({ page, totalPages, setPage, limit, setLimit }) => {
 };
 
 // =========================
-// Product List
+// Product List Component
 // =========================
 export default function ProductList() {
   const [products, setProducts] = useState([]);
@@ -77,7 +79,6 @@ export default function ProductList() {
   const fetchProducts = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const params = { page, limit };
       if (search) params.search = search;
@@ -102,23 +103,23 @@ export default function ProductList() {
   const totalPages = Math.ceil(total / limit);
 
   // =========================
-  // ✅ FINAL FIX: ALWAYS REFRESH FROM BACKEND
+  // Refresh products after stock updates
   // =========================
   const updateProductStock = () => {
-    fetchProducts(); // 🔥 ONLY TRUST DATABASE
+    fetchProducts();
   };
 
   return (
-    <div>
-      <h2 style={{ color: 'rgb(26, 188, 156)', textAlign: 'center', fontSize: '36px' }}>
-        Products
-      </h2>
+    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2rem' }}>
 
       {/* ✅ Stock Movements */}
       <StockMovements onStockUpdate={updateProductStock} />
-
+      {/* 🌈 Page Title */}
+      <h1 className="rainbow-text-title" style={{ textAlign: 'center', marginBottom: '20px' }}>
+        Products
+      </h1>
       {/* Filters */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
         <input
           type="text"
           placeholder="Search products..."
@@ -143,17 +144,27 @@ export default function ProductList() {
         </select>
       </div>
 
-      {!loading && totalPages > 1 && (
-        <Pagination page={page} totalPages={totalPages} setPage={setPage} limit={limit} setLimit={setLimit} />
-      )}
+<div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: '15px' }}>
+  <Pagination 
+    page={page} 
+    totalPages={totalPages} 
+    setPage={setPage} 
+    limit={limit} 
+    setLimit={setLimit} 
+  />
+</div>     
 
-      {loading && <p>Loading products...</p>}
-      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+      {/* Loading & Error */}
+      {loading && <p style={{ textAlign: 'center' }}>Loading products...</p>}
+      {error && <p style={{ color: 'red', textAlign: 'center' }}>Error: {error}</p>}
 
+      {/* =========================
+          Products Table
+      ========================= */}
       {!loading && !error && (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', border: '1px solid #444' }}>
           <thead>
-            <tr>
+            <tr style={{ border: '1px solid #444', backgroundColor: '#f0f0f0' }}>
               <th></th>
               <th>Name</th>
               <th>SKU</th>
@@ -163,21 +174,36 @@ export default function ProductList() {
               <th>Status</th>
             </tr>
           </thead>
-
           <tbody>
             {products.map(product => (
-              <tr key={product.id}>
-                <td>
-                  {product.image_url ? (
-                    <img src={product.image_url} alt="" style={{ width: 40 }} />
-                  ) : '—'}
-                </td>
+              <tr key={product.id} style={{ borderBottom: '1px solid #ddd' }}>
+                <td>{product.image_url ? <img src={product.image_url} alt="" style={{ width: 40, borderRadius: '4px' }} /> : '—'}</td>
                 <td>{product.name}</td>
                 <td>{product.sku}</td>
                 <td>{product.category_name}</td>
                 <td>{product.price}</td>
                 <td>{product.stock_quantity}</td>
-                <td>{product.stock_status}</td>
+                {/* Colored Status */}
+                <td>
+                  <span
+                    style={{
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      color: '#fff',
+                      backgroundColor:
+                        product.stock_status === 'in_stock'
+                          ? 'green'
+                          : product.stock_status === 'low_stock'
+                          ? 'orange'
+                          : 'red',
+                      textTransform: 'capitalize',
+                      fontWeight: 'bold',
+                      fontSize: '0.85em',
+                    }}
+                  >
+                    {product.stock_status.replace('_', ' ')}
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -185,7 +211,15 @@ export default function ProductList() {
       )}
 
       {!loading && totalPages > 1 && (
-        <Pagination page={page} totalPages={totalPages} setPage={setPage} limit={limit} setLimit={setLimit} />
+<div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: '15px' }}>
+  <Pagination 
+    page={page} 
+    totalPages={totalPages} 
+    setPage={setPage} 
+    limit={limit} 
+    setLimit={setLimit} 
+  />
+</div>
       )}
     </div>
   );
