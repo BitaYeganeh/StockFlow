@@ -61,93 +61,93 @@ use StockFlow\Middleware\AuthMiddleware;
 //   - For revenue: filter orders where status === 'fulfilled', then sum total_amount
 // ============================================================
 
-// STUB: Returns placeholder data until students implement Exercise 7.
-// Replace the body of this route with your own logic.
 $app->get('/api/dashboard/summary', function (Request $request, Response $response) {
-$auth = new SupabaseAuth();
-$auth->setToken($request->getAttribute('token'));
 
-// Fetch data
-$products = $auth->query('products', ['select' => '*']);
-$orders = $auth->query('orders', ['select' => '*']);
+    $auth = new SupabaseAuth();
+    $auth->setToken($request->getAttribute('token'));
 
-if (!$products) $products = [];
-if (!$orders) $orders = [];
+    // Fetch data (🔥 FIX: use ['data'])
+    $productsResult = $auth->query('products', ['select' => '*']);
+    $ordersResult = $auth->query('orders', ['select' => '*']);
 
-// INVENTORY
-$totalProducts = count($products);
+    $products = $productsResult['data'] ?? [];
+    $orders = $ordersResult['data'] ?? [];
 
-$totalValue = array_sum(array_map(function ($p) {
-    return (float)$p['price'] * (int)$p['stock_quantity'];
-}, $products));
+    // INVENTORY
+    $totalProducts = count($products);
 
-$lowStock = array_filter($products, function ($p) {
-    return $p['stock_quantity'] > 0 &&
-           $p['stock_quantity'] <= $p['reorder_threshold'];
-});
+    $totalValue = array_sum(array_map(function ($p) {
+        return (float)$p['price'] * (int)$p['stock_quantity'];
+    }, $products));
 
-$outOfStock = array_filter($products, function ($p) {
-    return $p['stock_quantity'] == 0;
-});
+    $lowStock = array_filter($products, function ($p) {
+        return $p['stock_quantity'] > 0 &&
+               $p['stock_quantity'] <= $p['reorder_threshold'];
+    });
 
-// ORDERS
-$totalOrders = count($orders);
+    $outOfStock = array_filter($products, function ($p) {
+        return $p['stock_quantity'] == 0;
+    });
 
-$byStatus = [
-    'draft' => 0,
-    'confirmed' => 0,
-    'fulfilled' => 0,
-    'cancelled' => 0
-];
+    // ORDERS
+    $totalOrders = count($orders);
 
-$totalRevenue = 0;
-
-foreach ($orders as $o) {
-    if (isset($byStatus[$o['status']])) {
-        $byStatus[$o['status']]++;
-    }
-
-    if ($o['status'] === 'fulfilled') {
-        $totalRevenue += (float)$o['total_amount'];
-    }
-}
-
-// LOW STOCK LIST
-$lowStockProducts = array_values(array_filter($products, function ($p) {
-    return $p['stock_quantity'] <= $p['reorder_threshold'];
-}));
-
-usort($lowStockProducts, function ($a, $b) {
-    return $a['stock_quantity'] - $b['stock_quantity'];
-});
-
-$lowStockProducts = array_slice($lowStockProducts, 0, 5);
-
-$lowStockProducts = array_map(function ($p) {
-    return [
-        'name' => $p['name'],
-        'stock_quantity' => (int)$p['stock_quantity'],
-        'reorder_threshold' => (int)$p['reorder_threshold']
+    $byStatus = [
+        'draft' => 0,
+        'confirmed' => 0,
+        'fulfilled' => 0,
+        'cancelled' => 0
     ];
-}, $lowStockProducts);
 
-// FINAL RESPONSE
-$data = [
-    'inventory' => [
-        'total_products' => $totalProducts,
-        'total_value' => round($totalValue, 2),
-        'low_stock_count' => count($lowStock),
-        'out_of_stock_count' => count($outOfStock),
-    ],
-    'orders' => [
-        'total_orders' => $totalOrders,
-        'by_status' => $byStatus,
-        'total_revenue' => round($totalRevenue, 2),
-    ],
-    'low_stock_products' => $lowStockProducts
-];
+    $totalRevenue = 0;
 
-$response->getBody()->write(json_encode($data));
-return $response->withHeader('Content-Type', 'application/json');
+    foreach ($orders as $o) {
+        if (isset($byStatus[$o['status']])) {
+            $byStatus[$o['status']]++;
+        }
+
+        if ($o['status'] === 'fulfilled') {
+            $totalRevenue += (float)$o['total_amount'];
+        }
+    }
+
+    // LOW STOCK LIST
+    $lowStockProducts = array_values(array_filter($products, function ($p) {
+        return $p['stock_quantity'] > 0 &&   // 🔥 small improvement
+               $p['stock_quantity'] <= $p['reorder_threshold'];
+    }));
+
+    usort($lowStockProducts, function ($a, $b) {
+        return $a['stock_quantity'] - $b['stock_quantity'];
+    });
+
+    $lowStockProducts = array_slice($lowStockProducts, 0, 5);
+
+    $lowStockProducts = array_map(function ($p) {
+        return [
+            'name' => $p['name'],
+            'stock_quantity' => (int)$p['stock_quantity'],
+            'reorder_threshold' => (int)$p['reorder_threshold']
+        ];
+    }, $lowStockProducts);
+
+    // FINAL RESPONSE
+    $data = [
+        'inventory' => [
+            'total_products' => $totalProducts,
+            'total_value' => round($totalValue, 2),
+            'low_stock_count' => count($lowStock),
+            'out_of_stock_count' => count($outOfStock),
+        ],
+        'orders' => [
+            'total_orders' => $totalOrders,
+            'by_status' => $byStatus,
+            'total_revenue' => round($totalRevenue, 2),
+        ],
+        'low_stock_products' => $lowStockProducts
+    ];
+
+    $response->getBody()->write(json_encode($data));
+    return $response->withHeader('Content-Type', 'application/json');
 
 })->add(new AuthMiddleware());

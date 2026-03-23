@@ -19,7 +19,9 @@ async function fetchApi(endpoint, options = {}) {
     throw new Error(error.error || error.message || `API error: ${res.status}`);
   }
 
-  return res.json();
+  const json = await res.json();
+  console.log('[API] Response from', endpoint, ':', json); // DEBUG log
+  return json;
 }
 
 export const api = {
@@ -48,7 +50,9 @@ export const api = {
   // Orders (Exercise 3, 5)
   getOrders: (params = {}) => {
     const query = new URLSearchParams(params).toString();
-    return fetchApi(`/orders${query ? '?' + query : ''}`);
+    const endpoint = `/orders${query ? '?' + query : ''}`;
+    console.log('[API] Fetching orders from:', endpoint); // DEBUG log
+    return fetchApi(endpoint);
   },
   getOrder: (id) => fetchApi(`/orders/${id}`),
   createOrder: (data) =>

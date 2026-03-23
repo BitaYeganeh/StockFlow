@@ -15,11 +15,19 @@ export default function OrderList() {
       try {
         const params = {};
         if (statusFilter) params.status = statusFilter;
+
+        // Fetch orders from API
         const data = await api.getOrders(params);
-        if (Array.isArray(data)) setOrders(data);
-        else if (data && Array.isArray(data.data)) setOrders(data.data);
+
+        console.log('[OrderList] Fetched orders:', data); // DEBUG log
+
+        // Always use data.data if exists, otherwise fallback to empty array
+        if (data && Array.isArray(data.data)) setOrders(data.data);
+        else if (Array.isArray(data)) setOrders(data);
         else setOrders([]);
+
       } catch (err) {
+        console.error('[OrderList] Error fetching orders:', err);
         setError(err.message || 'Failed to fetch orders');
         setOrders([]);
       } finally {
@@ -33,14 +41,20 @@ export default function OrderList() {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await api.updateOrderStatus(orderId, newStatus);
-      // Refresh the list
+
+      // Refresh the list after status change
       const params = {};
       if (statusFilter) params.status = statusFilter;
+
       const data = await api.getOrders(params);
-      if (Array.isArray(data)) setOrders(data);
-      else if (data && Array.isArray(data.data)) setOrders(data.data);
+      console.log('[OrderList] Orders after status update:', data); // DEBUG log
+
+      if (data && Array.isArray(data.data)) setOrders(data.data);
+      else if (Array.isArray(data)) setOrders(data);
       else setOrders([]);
+
     } catch (err) {
+      console.error('[OrderList] Error updating status:', err);
       alert('Error: ' + err.message);
     }
   };
@@ -68,7 +82,7 @@ export default function OrderList() {
       {loading && <p>Loading orders...</p>}
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
-      {!loading && !error && (
+      {!loading && !error && orders.length > 0 && (
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid #555' }}>
