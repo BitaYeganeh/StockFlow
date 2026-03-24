@@ -76,7 +76,7 @@ input:focus, select:focus, textarea:focus {
 .auth-button {
   margin: 0 auto;
   padding: 5px 10px;
-  width: 6rem;
+  width: 7rem;
   background: #1abc9c;      /* Base color */
   color: #fff;
   border-color: #000000;
@@ -155,5 +155,11 @@ tbody tr:nth-child(odd) {
 thead {
   background-color: #84c8bb;
   font-weight: bold;
+}
+.section-title {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  margin-top: 40px;
+  text-align: center;
 }
 

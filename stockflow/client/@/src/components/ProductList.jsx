@@ -187,18 +187,18 @@ export default function ProductList() {
                 <td>
                   <span
                     style={{
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      color: '#fff',
-                      backgroundColor:
-                        product.stock_status === 'in_stock'
-                          ? 'green'
-                          : product.stock_status === 'low_stock'
-                          ? 'orange'
-                          : 'red',
-                      textTransform: 'capitalize',
-                      fontWeight: 'bold',
-                      fontSize: '0.85em',
+                       padding: '2px 6px',
+                       borderRadius: '4px',
+                       textTransform: 'capitalize',
+                       fontWeight: 'bold',
+                       fontSize: '0.85em',
+                      color:
+                      product.stock_status === 'in_stock'
+                      ? 'green'
+                      : product.stock_status === 'low_stock'
+                      ? 'orange'
+                      : 'red', // out_of_stock
+                      backgroundColor: 'transparent', // optional
                     }}
                   >
                     {product.stock_status.replace('_', ' ')}
