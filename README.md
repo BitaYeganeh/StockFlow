@@ -1,17 +1,51 @@
-# PHP-MAMP
+# StockFlow — Completed Task Submission
 
-PHP-MAMP is a set of docker images that include a MAMP stack ([macOS](https://www.apple.com/macos/monterey/), [Apache](https://www.apache.org/), [MySQL](https://www.mysql.com/), [PHP8](https://www.php.net/) and [phpMyAdmin](https://www.phpmyadmin.net/) all in one handy package.
+## Overview
 
-## Using the image
+This repository contains my completed **StockFlow PHP + React project** for the Lesson 6 exercises.  
 
-### On the command line
+I have implemented the backend tasks according to the instructions and added optional **AI Integration** (Exercise 8) using the Google Gemini API.
 
-This is the quickest way
+---
 
-```
-docker-compose up
-```
+## Features Implemented
 
-# Use for reference
+- **Product Management**
+  - List products with formatted price, category, and stock status
+  - Product CRUD (create, update, delete)
+  - Image upload to Supabase Storage
 
-Use solely for reference material only
+- **Order Management**
+  - Create and manage orders
+  - Order status updates with validation
+  - Formatted dates and totals
+
+- **Stock Movements**
+  - Track stock adjustments
+  - Low-stock detection
+
+- **Dashboard**
+  - Inventory and order analytics
+  - Low-stock product list
+
+- **AI Integration (Optional)**
+  - Generate product descriptions
+  - Provide stock reorder advice
+  - Summarize recent orders
+
+---
+
+## Setup
+
+### Backend
+
+```bash
+cd stockflow/api
+composer install
+php -S localhost:8005 -t public/
+
+### Frontend
+cd stockflow/client/@
+npm install
+npm run dev
+
