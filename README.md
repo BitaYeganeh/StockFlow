@@ -39,14 +39,13 @@ This repository contains my completed **StockFlow PHP + React project**
 
 
 ```bash
-🔧 Backend
+🔧 Backend:
 cd stockflow/api
 composer install
 php -S localhost:8005 -t public/
 
 
 💻 Frontend:
-
 cd stockflow/client/@
 npm install
 npm run dev
