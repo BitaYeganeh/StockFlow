@@ -5,13 +5,11 @@ namespace StockFlow\AI;
 /**
  * GeminiAI - PHP class for Google Gemini API
  *
- * Adapted from the original phpDir implementation.
- * Key difference: uses $_ENV (loaded by phpdotenv) instead of manually parsing .env
+ * Uses dynamic model selection to avoid “model not found” errors.
  */
 class GeminiAI
 {
     private string $apiKey;
-    private string $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
     public function __construct()
     {
@@ -23,14 +21,54 @@ class GeminiAI
     }
 
     /**
+     * List all models available for this API key
+     *
+     * @return array
+     */
+    public function listModels(): array
+    {
+        $url = "https://generativelanguage.googleapis.com/v1beta/models?key=" . $this->apiKey;
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => ["Content-Type: application/json"]
+        ]);
+
+        $response = curl_exec($ch);
+        $decoded = json_decode($response, true);
+
+        return $decoded['models'] ?? [];
+    }
+
+    /**
      * Send a prompt to Gemini and get a text response
      *
-     * @param string $prompt  The question or instruction to send
-     * @return string         The AI's text response
+     * @param string $prompt
+     * @return string
+     * @throws \Exception
      */
     public function ask(string $prompt): string
     {
-        $url = $this->apiUrl . '?key=' . $this->apiKey;
+        // Step 1: find a valid model that supports generateContent
+        $models = $this->listModels();
+        $modelId = null;
+
+        foreach ($models as $model) {
+            if (isset($model['supportedGenerationMethods']) &&
+                in_array('generateContent', $model['supportedGenerationMethods'])) {
+                // strip "models/" prefix
+                $modelId = str_replace('models/', '', $model['name']);
+                break;
+            }
+        }
+
+        if (!$modelId) {
+            throw new \Exception("No valid model found for generateContent. Check your API key permissions.");
+        }
+
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$modelId}:generateContent?key=" . $this->apiKey;
 
         $data = [
             'contents' => [
@@ -43,7 +81,6 @@ class GeminiAI
         ];
 
         $ch = curl_init();
-
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,

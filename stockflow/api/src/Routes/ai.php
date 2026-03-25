@@ -53,13 +53,8 @@ $app->post('/api/ai/describe', function (Request $request, Response $response) {
         . "Category: {$category}. Price: {$price} EUR.";
 
     try {
-        // Mock response (friendly placeholder)
-        $description = "This is a placeholder description for {$product['name']}. "
-            . "It belongs to the {$category} category and costs {$price} EUR.";
-
-        // Real AI call (commented out due to quota)
-        // $ai = new GeminiAI();
-        // $description = $ai->ask($prompt);
+        $ai = new GeminiAI();
+        $description = $ai->ask($prompt);
 
         $response->getBody()->write(json_encode(['description' => $description]));
         return $response->withHeader('Content-Type', 'application/json');
@@ -101,13 +96,8 @@ $app->post('/api/ai/stock-advice', function (Request $request, Response $respons
     }
 
     try {
-        // Mock advice
-        $advice = "Reorder the listed products based on stock levels. "
-            . "Prioritize items that are closest to zero.";
-
-        // Real AI call (commented out due to quota)
-        // $ai = new GeminiAI();
-        // $advice = $ai->ask($prompt);
+        $ai = new GeminiAI();
+        $advice = $ai->ask($prompt);
 
         $response->getBody()->write(json_encode([
             'advice' => $advice,
@@ -151,13 +141,8 @@ $app->post('/api/ai/summarize-orders', function (Request $request, Response $res
     }
 
     try {
-        // Mock summary
-        $summary = "Recent orders show typical sales trends. Most orders are fulfilled or confirmed, "
-            . "with a few drafts or cancellations.";
-
-        // Real AI call (commented out due to quota)
-        // $ai = new GeminiAI();
-        // $summary = $ai->ask($prompt);
+        $ai = new GeminiAI();
+        $summary = $ai->ask($prompt);
 
         $response->getBody()->write(json_encode([
             'summary' => $summary,
