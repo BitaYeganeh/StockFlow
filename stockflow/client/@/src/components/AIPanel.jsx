@@ -62,30 +62,30 @@ export default function AIPanel() {
 
   return (
     <div>
-      <h2>AI Assistant</h2>
+      <h2 className="rainbow-text-title">AI Assistant</h2>
 
       {/* Product Description Generator */}
-      <div style={{ marginBottom: '20px', padding: '15px', border: '1px solid #444', borderRadius: '8px' }}>
-        <h3>Generate Product Description</h3>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <div style={{ marginBottom: '20px', padding: '15px', border: '3px solid #187775', borderRadius: '8px' }}>
+        <h3 style={{ textAlign: 'center', color: '#187775', margin: '0 0 20px 0' }}>Generate Product Description</h3>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center' }}>
           <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)}>
             <option value="">Select product...</option>
             {products.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>
-          <button onClick={() => callAI('describe')} disabled={loading}>
+          <button style={{ backgroundColor: '#11b7b4', color: 'black', border: 'black', padding: '10px 20px', borderRadius: '4px' } } onClick={() => callAI('describe')} disabled={loading}>
             {loading ? 'Generating...' : 'Generate'}
           </button>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-        <button onClick={() => callAI('stock-advice')} disabled={loading}>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', justifyContent: 'center' }}>
+        <button style={{ backgroundColor: '#11b7b4', color: 'black', border: 'black', padding: '10px 20px', borderRadius: '4px' }} onClick={() => callAI('stock-advice')} disabled={loading}>
           Get Stock Advice
         </button>
-        <button onClick={() => callAI('summarize')} disabled={loading}>
+        <button style={{ backgroundColor: '#11b7b4', color: 'black', border: 'black', padding: '10px 20px', borderRadius: '4px' }}  onClick={() => callAI('summarize')} disabled={loading}>
           Summarize Orders
         </button>
       </div>
@@ -93,8 +93,8 @@ export default function AIPanel() {
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
       {result && (
-        <div style={{ padding: '15px', border: '1px solid #444', borderRadius: '8px', whiteSpace: 'pre-wrap' }}>
-          <h4>AI Response:</h4>
+        <div style={{ padding: '15px', border: '3px solid #187775', borderRadius: '8px', whiteSpace: 'pre-wrap' }}>
+          <h4 style={{ color: '#09b6b3' }}>AI Response:</h4>
           <p>{result}</p>
         </div>
       )}
