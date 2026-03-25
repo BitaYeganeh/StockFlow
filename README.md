@@ -1,10 +1,9 @@
-# StockFlow — Completed Task Submission
+# StockFlow Task Submission
 
 ## Overview
 
-This repository contains my completed **StockFlow PHP + React project** for the Lesson 6 exercises.  
+This repository contains my completed **StockFlow PHP + React project** 
 
-I have implemented the backend tasks according to the instructions and added optional **AI Integration** (Exercise 8) using the Google Gemini API.
 
 ---
 
@@ -35,16 +34,19 @@ I have implemented the backend tasks according to the instructions and added opt
 
 ---
 
-## Setup
+🚀 Setup
 
-### Backend
+
 
 ```bash
+🔧 Backend
 cd stockflow/api
 composer install
 php -S localhost:8005 -t public/
 
-### Frontend
+
+💻 Frontend:
+
 cd stockflow/client/@
 npm install
 npm run dev
