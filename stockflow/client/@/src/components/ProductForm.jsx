@@ -94,8 +94,18 @@ export default function ProductForm({ product = null, onSaved = () => {} }) {
   };
 
   return (
-    <div>
-      <h3>{isEdit ? 'Edit Product' : 'New Product'}</h3>
+    <div style={{ maxWidth: '700px', textAlign: 'center' }}>
+      <h3 style={{
+          fontSize: '2rem',
+          fontWeight: 'bold',
+          background: 'linear-gradient(90deg, red, rgb(234, 173, 58), yellow, #1abc9c, rgb(65, 169, 224))',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          animation: 'rainbow 5s linear infinite',
+          marginBottom: '10px',
+          marginTop: '10px',
+        }}
+>{isEdit ? 'Edit Product' : 'New Product'}</h3>
 
       {message && (
         <p style={{ color: message.type === 'error' ? 'red' : 'green' }}>
@@ -103,7 +113,19 @@ export default function ProductForm({ product = null, onSaved = () => {} }) {
         </p>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '400px' }}>
+      <form onSubmit={handleSubmit} 
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '15px',
+          maxWidth: '300px',
+          margin: '0 auto',
+          padding: '20px',
+          borderRadius: '12px',
+          border: '3px solid #0bb5a9',
+          backgroundColor: '#f9f9f9',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        }}>
         <input name="name" placeholder="Product name *" value={form.name} onChange={handleChange} required />
         <input name="sku" placeholder="SKU (e.g. SKU-1234) *" value={form.sku} onChange={handleChange} required />
         <input name="price" type="number" step="0.01" placeholder="Price *" value={form.price} onChange={handleChange} required />
@@ -113,7 +135,6 @@ export default function ProductForm({ product = null, onSaved = () => {} }) {
           {/* In a real app, you'd fetch categories from the API.
               For now, students can hardcode or ignore this field. */}
         </select>
-
         {/* Image upload */}
         <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <span>Product Image</span>
@@ -121,6 +142,7 @@ export default function ProductForm({ product = null, onSaved = () => {} }) {
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif"
             onChange={handleFileChange}
+            style ={{ border: '1px solid black', padding: '6px', borderRadius: '6px' }}  
           />
         </label>
 
@@ -130,14 +152,27 @@ export default function ProductForm({ product = null, onSaved = () => {} }) {
             <img
               src={imagePreview}
               alt="Preview"
-              style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: '8px', border: '1px solid #444' }}
+              style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: '8px', border: '1px solid #444444' }}
             />
           </div>
         )}
-
-        <button type="submit" disabled={saving || uploading}>
+        <div style={{ height: '10px', justifyContent: 'center', alignItems: 'center', display: 'flex' }}>
+        <button type="submit" disabled={saving || uploading} style ={{
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '6px',
+          width: '50%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '6px',
+          backgroundColor: '#0bb5a9',
+          color: 'white',
+          marginTop: '10px',
+          marginBottom: '6px',
+        }}>
           {uploading ? 'Uploading image...' : saving ? 'Saving...' : isEdit ? 'Update Product' : 'Create Product'}
         </button>
+        </div>
       </form>
     </div>
   );
