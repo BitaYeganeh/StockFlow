@@ -1,52 +1,107 @@
-# StockFlow Task Submission
+# 📦 StockFlow — Inventory and Order Management
 
-## Overview
+A full-stack inventory app with a **PHP REST API** and a **React** front end. Staff can manage products and stock, handle orders, see a dashboard of low-stock items, and use AI (Google Gemini) to write product descriptions and reorder advice.
 
-This repository contains my completed **StockFlow PHP + React project** 
+Built during a PHP course in spring 2026. The course gave a starter project with the routes stubbed out; **I implemented the backend routes and finished the front-end pages** (see [My part](#my-part)).
 
-
----
-
-## Features Implemented
-
-- **Product Management**
-  - List products with formatted price, category, and stock status
-  - Product CRUD (create, update, delete)
-  - Image upload to Supabase Storage
-
-- **Order Management**
-  - Create and manage orders
-  - Order status updates with validation
-  - Formatted dates and totals
-
-- **Stock Movements**
-  - Track stock adjustments
-  - Low-stock detection
-
-- **Dashboard**
-  - Inventory and order analytics
-  - Low-stock product list
-
-- **AI Integration (Optional)**
-  - Generate product descriptions
-  - Provide stock reorder advice
-  - Summarize recent orders
+> 📌 The finished version is on the [`final_task`](https://github.com/BitaYeganeh/StockFlow/tree/final_task) branch.
 
 ---
 
-🚀 Setup
+## ✨ Features
 
+| Area | What it does |
+| --- | --- |
+| **Products** | List with search and pagination, create, edit, delete, image upload, stock status |
+| **Orders** | Create orders with several products, view details, change status with rules: `draft → confirmed → fulfilled`, or `cancelled` |
+| **Stock** | Record stock movements (in / out / adjustment) and see the history |
+| **Dashboard** | Totals for products, stock value, orders and revenue, plus the 5 most urgent low-stock products |
+| **AI (Gemini)** | Generate a product description, get stock reorder advice, summarise recent orders |
+| **Login** | Google sign-in through Supabase Auth; write actions need a logged-in user |
 
+---
+
+## 🛠 Tech stack
+
+- **Backend:** PHP 8.1+, [Slim 4](https://www.slimframework.com/) router, Composer, `vlucas/phpdotenv`
+- **Database and auth:** [Supabase](https://supabase.com/) (PostgreSQL with row-level security, Google OAuth)
+- **AI:** Google Gemini API
+- **Frontend:** React 19, Vite, Axios
+
+```
+React (Vite)  ──HTTP/JSON──►  PHP API (Slim 4)  ──►  Supabase (database + auth)
+localhost:5173                localhost:8005    └──►  Google Gemini (AI)
+```
+
+---
+
+## 🔌 API endpoints
+
+All routes are in [`stockflow/api/src/Routes/`](stockflow/api/src/Routes).
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| GET | `/api/products`, `/api/products/{id}` | List (search, pagination) and get one product |
+| POST / PUT / DELETE | `/api/products`, `/api/products/{id}` | Create, update and delete products |
+| POST | `/api/products/upload-image` | Upload a product image |
+| GET / POST | `/api/orders`, `/api/orders/{id}` | List, view and create orders |
+| PUT | `/api/orders/{id}/status` | Change order status (only allowed steps) |
+| GET / POST | `/api/stock/movements` | Stock history and new stock movements |
+| GET | `/api/dashboard/summary` | Dashboard numbers and low-stock list |
+| POST | `/api/ai/describe`, `/api/ai/stock-advice`, `/api/ai/summarize-orders` | AI features |
+| GET | `/api/auth/login-url`, `/api/auth/user` | Google login and current user |
+
+---
+
+## 👩‍💻 My part
+
+The starter code (by the course teacher) had the app structure, login and stubbed routes. I built:
+
+- **Backend routes:** products (full CRUD, search, pagination, image upload), orders (creation with line items, status rules), stock movements, dashboard summary and the three AI routes
+- **Gemini client:** picks an available model automatically to avoid "model not found" errors ([`GeminiAI.php`](stockflow/api/src/AI/GeminiAI.php))
+- **Front end:** finished the product form, order form and list, stock movements page, dashboard and AI panel, and styled the pages
+- **Setup:** `.env.example` so the project can be run without sharing keys
+
+---
+
+## 🚀 Run locally
+
+You need PHP 8.1+, Composer, Node.js and a Supabase project (plus a Gemini API key for the AI features).
 
 ```bash
-🔧 Backend:
+# 1. Environment variables
+cp .env.example stockflow/api/.env   # then fill in your Supabase and Gemini keys
+```
+
+```bash
+# 2. Backend (http://localhost:8005)
 cd stockflow/api
 composer install
 php -S localhost:8005 -t public/
+```
 
-
-💻 Frontend:
+```bash
+# 3. Frontend (http://localhost:5173), in a second terminal
 cd stockflow/client/@
 npm install
 npm run dev
+```
 
+Exercise notes and the Supabase setup steps are in [`stockflow/TASKS.md`](stockflow/TASKS.md), and the data flow is explained in [`stockflow/ARCHITECTURE.md`](stockflow/ARCHITECTURE.md).
+
+---
+
+## 📁 Repository layout
+
+| Folder | What it is |
+| --- | --- |
+| [`stockflow/api/`](stockflow/api) | PHP REST API (Slim 4) |
+| [`stockflow/client/@/`](stockflow/client/@) | React front end |
+| [`phpDir/`](phpDir) | Earlier PHP lessons (plain PHP pages, run with Docker) |
+| [`docker-compose.yml`](docker-compose.yml) | Docker setup for the PHP lessons (Apache, MySQL, phpMyAdmin) |
+
+---
+
+## 👤 Author
+
+**Bita Yeganeh** · [GitHub](https://github.com/BitaYeganeh) · [Portfolio](https://myportfolio-u7mw.onrender.com)
