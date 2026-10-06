@@ -10,6 +10,10 @@ Built during a PHP course in spring 2026. The course gave a starter project with
 
 ---
 
+<p align="center"><img src="docs/screenshots/products.png" alt="StockFlow product list with categories, stock levels and stock status" width="720" /></p>
+
+---
+
 ## ✨ Features
 
 | Area | What it does |
@@ -63,6 +67,14 @@ The starter code (by the course teacher) had the app structure, login and stubbe
 - **Gemini client:** picks an available model automatically to avoid "model not found" errors ([`GeminiAI.php`](stockflow/api/src/AI/GeminiAI.php))
 - **Front end:** finished the product form, order form and list, stock movements page, dashboard and AI panel, and styled the pages
 - **Setup:** `.env.example` so the project can be run without sharing keys
+- **Deployment:** made it run live on Render (see below)
+
+### Bugs found and fixed while deploying
+
+- Every product showed **"Uncategorized"**: the API read Supabase's joined category as a list, but it is a single object
+- Uploaded **product images did not load** in the browser: the API saved `/uploads/...` paths relative to the API, so the React app looked for them on its own address. New uploads now get the full API address, and older paths are fixed in the app
+- The API **crashed without a `.env` file** (as on a server); it now also reads settings from the environment
+- The developer test page `test.php` **showed parts of the keys** and is no longer shipped; error details are hidden in production
 
 ---
 
@@ -93,6 +105,19 @@ npm run dev
 ```
 
 Exercise notes and the Supabase setup steps are in [`stockflow/TASKS.md`](stockflow/TASKS.md), and the data flow is explained in [`stockflow/ARCHITECTURE.md`](stockflow/ARCHITECTURE.md).
+
+---
+
+## ☁️ Deployment
+
+StockFlow runs on [Render](https://render.com) from [`render.yaml`](https://github.com/BitaYeganeh/StockFlow/blob/final_task/render.yaml):
+
+| Service | What | Address |
+| --- | --- | --- |
+| `stockflow` | React app (static site) | [stockflow-7o1k.onrender.com](https://stockflow-7o1k.onrender.com) |
+| `stockflow-api` | PHP API (Docker, Apache) | [stockflow-api-7f6d.onrender.com](https://stockflow-api-7f6d.onrender.com/api/products) |
+
+The two services find each other through their Render host names. Secrets (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `GEMINI_API_KEY`) are set in the Render dashboard, never in the repository. Google sign-in needs the site's `/auth/callback` address in Supabase → Authentication → URL Configuration.
 
 ---
 
