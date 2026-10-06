@@ -1,5 +1,8 @@
-// Render passes the API's host name at build time (VITE_API_HOST)
-const API_HOST = import.meta.env.VITE_API_HOST;
+// Render passes the API's service name at build time (VITE_API_HOST),
+// e.g. "stockflow-api-7f6d"; its public address is <name>.onrender.com
+const rawHost = import.meta.env.VITE_API_HOST;
+const API_HOST =
+  rawHost && !rawHost.includes('.') ? `${rawHost}.onrender.com` : rawHost;
 const API_BASE =
   import.meta.env.VITE_API_URL ||
   (API_HOST ? `https://${API_HOST}/api` : 'http://localhost:8005/api');

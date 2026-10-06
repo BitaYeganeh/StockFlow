@@ -9,9 +9,14 @@ $dotenv->safeLoad();
 foreach (getenv() as $key => $value) {
     $_ENV[$key] ??= $value;
 }
-// On Render the front end's address arrives as a bare host name
+// On Render the front end's address arrives as a service name
+// ("stockflow-7o1k"); its public address is <name>.onrender.com
 if (empty($_ENV['CLIENT_URL']) && !empty($_ENV['CLIENT_HOST'])) {
-    $_ENV['CLIENT_URL'] = 'https://' . $_ENV['CLIENT_HOST'];
+    $host = $_ENV['CLIENT_HOST'];
+    if (!str_contains($host, '.')) {
+        $host .= '.onrender.com';
+    }
+    $_ENV['CLIENT_URL'] = 'https://' . $host;
 }
 if (empty($_ENV['SITE_URL']) && !empty($_ENV['RENDER_EXTERNAL_URL'])) {
     $_ENV['SITE_URL'] = $_ENV['RENDER_EXTERNAL_URL'];
