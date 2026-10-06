@@ -2,11 +2,25 @@
 require __DIR__ . '/../vendor/autoload.php';
 use Slim\Factory\AppFactory;
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
+// Settings come from api/.env locally, or from the host's environment
+// (Render) where there is no .env file
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->load();
+$dotenv->safeLoad();
+foreach (getenv() as $key => $value) {
+    $_ENV[$key] ??= $value;
+}
+// On Render the front end's address arrives as a bare host name
+if (empty($_ENV['CLIENT_URL']) && !empty($_ENV['CLIENT_HOST'])) {
+    $_ENV['CLIENT_URL'] = 'https://' . $_ENV['CLIENT_HOST'];
+}
+if (empty($_ENV['SITE_URL']) && !empty($_ENV['RENDER_EXTERNAL_URL'])) {
+    $_ENV['SITE_URL'] = $_ENV['RENDER_EXTERNAL_URL'];
+}
+
+// Show error details only while developing
+$debug = ($_ENV['APP_DEBUG'] ?? 'true') === 'true';
+error_reporting(E_ALL);
+ini_set('display_errors', $debug ? '1' : '0');
 
 $app = AppFactory::create();
 $app->options('/{routes:.+}', function ($request, $response) {
@@ -19,7 +33,7 @@ $app->options('/{routes:.+}', function ($request, $response) {
 // ------------------------
 $app->addBodyParsingMiddleware();
 $app->addRoutingMiddleware();
-$app->addErrorMiddleware(true, true, true);
+$app->addErrorMiddleware($debug, true, true);
 
 // ✅ CORS middleware
 $app->add(function ($request, $handler) {

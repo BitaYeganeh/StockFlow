@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { api } from '../services/api';
+import { api, assetUrl } from '../services/api';
 
 /**
  * ProductForm — Create or edit a product with image upload
@@ -31,7 +31,7 @@ export default function ProductForm({ product = null, onSaved = () => {} }) {
 
   // Image state
   const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(product?.image_url || null);
+  const [imagePreview, setImagePreview] = useState(assetUrl(product?.image_url) || null);
   const [uploading, setUploading] = useState(false);
 
   const [message, setMessage] = useState(null);

@@ -1,0 +1,43 @@
+# Render Blueprint: deploys the StockFlow API (PHP, Docker) and the React app.
+# Secrets marked "sync: false" are typed into the Render dashboard, never committed.
+services:
+  - type: web
+    name: stockflow-api
+    runtime: docker
+    plan: free
+    dockerContext: ./stockflow/api
+    dockerfilePath: ./stockflow/api/Dockerfile
+    healthCheckPath: /api/products
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: APP_DEBUG
+        value: "false"
+      # Front-end address, used for CORS and the Google login redirect
+      - key: CLIENT_HOST
+        fromService:
+          type: web
+          name: stockflow
+          property: host
+
+  - type: web
+    name: stockflow
+    runtime: static
+    rootDir: stockflow/client/@
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_HOST
+        fromService:
+          type: web
+          name: stockflow-api
+          property: host
+    routes:
+      # Single-page app: /auth/callback and other paths load index.html
+      - type: rewrite
+        source: /*
+        destination: /index.html

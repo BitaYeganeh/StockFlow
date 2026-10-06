@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../services/api';
+import { api, assetUrl } from '../services/api';
 import StockMovements from './StockMovements';
 
 // =========================
@@ -177,7 +177,7 @@ export default function ProductList() {
           <tbody>
             {products.map(product => (
               <tr key={product.id} style={{ borderBottom: '1px solid #ddd' }}>
-                <td>{product.image_url ? <img src={product.image_url} alt="" style={{ width: 40, borderRadius: '4px' }} /> : '—'}</td>
+                <td>{product.image_url ? <img src={assetUrl(product.image_url)} alt="" style={{ width: 40, borderRadius: '4px' }} /> : '—'}</td>
                 <td>{product.name}</td>
                 <td>{product.sku}</td>
                 <td>{product.category_name}</td>

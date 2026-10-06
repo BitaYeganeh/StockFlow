@@ -1,4 +1,12 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8005/api';
+// Render passes the API's host name at build time (VITE_API_HOST)
+const API_HOST = import.meta.env.VITE_API_HOST;
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (API_HOST ? `https://${API_HOST}/api` : 'http://localhost:8005/api');
+
+// Older products saved images as "/uploads/x.jpg" (relative to the API)
+export const assetUrl = (url) =>
+  url && url.startsWith('/') ? API_BASE.replace(/\/api$/, '') + url : url;
 
 async function fetchApi(endpoint, options = {}) {
   const token = localStorage.getItem('supabase_token');

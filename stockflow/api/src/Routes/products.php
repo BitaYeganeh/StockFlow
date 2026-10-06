@@ -273,7 +273,10 @@ $app->post('/api/products/upload-image', function (Request $request, Response $r
         return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
     }
 
-    $url = '/uploads/' . $filename;
+    // Full address of the API, so the image also loads from the front end's site
+    $uri = $request->getUri();
+    $scheme = $request->getHeaderLine('X-Forwarded-Proto') ?: $uri->getScheme();
+    $url = $scheme . '://' . $uri->getAuthority() . '/uploads/' . $filename;
 
     $response->getBody()->write(json_encode([
         'image_url' => $url
