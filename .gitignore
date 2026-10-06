@@ -1,2 +1,4 @@
 # Environment variables
 .env
+# Render build output
+client-dist/

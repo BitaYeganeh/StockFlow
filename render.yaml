@@ -27,9 +27,10 @@ services:
   - type: web
     name: stockflow
     runtime: static
-    rootDir: stockflow/client/@
-    buildCommand: npm ci && npm run build
-    staticPublishPath: dist
+    # The app lives in "stockflow/client/@"; Render paths can't contain "@",
+    # so build there and copy the result to a plain folder
+    buildCommand: cd "stockflow/client/@" && npm ci && npm run build && rm -rf ../../../client-dist && cp -r dist ../../../client-dist
+    staticPublishPath: client-dist
     envVars:
       - key: VITE_API_HOST
         fromService:
