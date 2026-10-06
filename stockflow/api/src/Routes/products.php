@@ -8,6 +8,17 @@ use StockFlow\Middleware\AuthMiddleware;
 // ============================================================
 // GET /api/products — List products
 // ============================================================
+// ============================================================
+// GET /api/categories  (public: used by the product form and filters)
+// ============================================================
+$app->get('/api/categories', function (Request $request, Response $response) {
+    $auth = new SupabaseAuth();
+    $result = $auth->query('categories', ['select' => 'id,name', 'order' => 'name.asc']);
+
+    $response->getBody()->write(json_encode(['data' => $result['data'] ?? []]));
+    return $response->withHeader('Content-Type', 'application/json');
+});
+
 $app->get('/api/products', function (Request $request, Response $response) {
 
     $auth = new SupabaseAuth();

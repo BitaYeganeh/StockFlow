@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api, assetUrl } from '../services/api';
 
 /**
@@ -36,6 +36,14 @@ export default function ProductForm({ product = null, onSaved = () => {} }) {
 
   const [message, setMessage] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [categories, setCategories] = useState([]);
+
+  // Load the category list for the dropdown
+  useEffect(() => {
+    api.getCategories()
+      .then((res) => setCategories(res.data || []))
+      .catch(() => setCategories([]));
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -108,10 +116,11 @@ export default function ProductForm({ product = null, onSaved = () => {} }) {
         <input name="sku" placeholder="SKU (e.g. SKU-1234) *" value={form.sku} onChange={handleChange} required />
         <input name="price" type="number" step="0.01" placeholder="Price *" value={form.price} onChange={handleChange} required />
         <textarea name="description" placeholder="Description (optional)" value={form.description} onChange={handleChange} rows={3} />
-        <select name="category_id" value={form.category_id} onChange={handleChange}>
-          <option value="">Select category...</option>
-          {/* In a real app, you'd fetch categories from the API.
-              For now, students can hardcode or ignore this field. */}
+        <select name="category_id" value={form.category_id} onChange={handleChange} required aria-label="Category">
+          <option value="">Select a category *</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
         </select>
         {/* Image upload */}
         <label className="field">

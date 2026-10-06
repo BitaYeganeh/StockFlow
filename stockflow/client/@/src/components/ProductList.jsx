@@ -1,14 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api, assetUrl } from '../services/api';
 
-const CATEGORIES = [
-  'Audio',
-  'Cables & Adapters',
-  'Displays',
-  'Keyboards',
-  'Mice & Peripherals',
-  'Power & Charging',
-];
 
 const STOCK_BADGE = {
   in_stock: { label: 'In stock', className: 'badge badge-success' },
@@ -99,6 +91,13 @@ export default function ProductList() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [status, setStatus] = useState('active');
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    api.getCategories()
+      .then((res) => setCategories((res.data || []).map((c) => c.name)))
+      .catch(() => setCategories([]));
+  }, []);
 
   // =========================
   // Fetch products
@@ -151,7 +150,7 @@ export default function ProductList() {
             aria-label="Category"
           >
             <option value="">All categories</option>
-            {CATEGORIES.map((c) => (
+            {categories.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>

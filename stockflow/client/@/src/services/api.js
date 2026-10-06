@@ -47,6 +47,9 @@ export const api = {
   getLoginUrl: () => fetchApi('/auth/login-url'),
   getUser: () => fetchApi('/auth/user'),
 
+  // Categories
+  getCategories: () => fetchApi('/categories'),
+
   // Products (Exercise 1, 2, 4)
   getProducts: (params = {}) => {
     const query = new URLSearchParams(params).toString();
