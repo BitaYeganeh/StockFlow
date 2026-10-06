@@ -10,7 +10,7 @@ Built during a PHP course in spring 2026. The course gave a starter project with
 
 ---
 
-<p align="center"><img src="docs/screenshots/products.png" alt="StockFlow product list with categories, stock levels and stock status" width="720" /></p>
+<p align="center"><img src="docs/screenshots/stockflow-products.png" alt="StockFlow product list with categories, stock levels and stock status" width="720" /></p>
 
 ---
 
