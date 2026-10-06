@@ -254,17 +254,31 @@ $app->post('/api/products/upload-image', function (Request $request, Response $r
         return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
     }
 
-    $uploadDir = __DIR__ . '/../../public/uploads/';
-
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0777, true);
+    // Only images, at most 5 MB
+    $mimeType = $image->getClientMediaType() ?: 'application/octet-stream';
+    $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!in_array($mimeType, $allowed, true)) {
+        $response->getBody()->write(json_encode(['error' => 'Please upload a JPG, PNG, WebP or GIF image']));
+        return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
+    }
+    if ($image->getSize() > 5 * 1024 * 1024) {
+        $response->getBody()->write(json_encode(['error' => 'Image is too large (max 5 MB)']));
+        return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
     }
 
-    $filename = uniqid() . '_' . $image->getClientFilename();
-    $targetPath = $uploadDir . $filename;
+    // Safe, unique file name: letters, numbers, dots and dashes only
+    $original = pathinfo($image->getClientFilename(), PATHINFO_FILENAME);
+    $extension = strtolower(pathinfo($image->getClientFilename(), PATHINFO_EXTENSION));
+    $safeName = trim(preg_replace('/[^A-Za-z0-9.-]+/', '-', $original), '-') ?: 'image';
+    $filename = uniqid() . '-' . substr($safeName, 0, 60) . '.' . $extension;
 
+    // Store in Supabase Storage (permanent), not on the server's disk, which
+    // the hosting platform wipes on every deploy
     try {
-        $image->moveTo($targetPath);
+        $auth = new SupabaseAuth();
+        $auth->setToken($request->getAttribute('token'));
+        $auth->uploadFile('product-images', $filename, (string) $image->getStream(), $mimeType);
+        $url = $auth->getPublicUrl('product-images', $filename);
     } catch (Exception $e) {
         $response->getBody()->write(json_encode([
             'error' => 'Failed to save image',
@@ -272,11 +286,6 @@ $app->post('/api/products/upload-image', function (Request $request, Response $r
         ]));
         return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
     }
-
-    // Full address of the API, so the image also loads from the front end's site
-    $uri = $request->getUri();
-    $scheme = $request->getHeaderLine('X-Forwarded-Proto') ?: $uri->getScheme();
-    $url = $scheme . '://' . $uri->getAuthority() . '/uploads/' . $filename;
 
     $response->getBody()->write(json_encode([
         'image_url' => $url
