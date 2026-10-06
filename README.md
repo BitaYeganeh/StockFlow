@@ -6,6 +6,8 @@ Built during a PHP course in spring 2026. The course gave a starter project with
 
 > 📌 The finished version is on the [`final_task`](https://github.com/BitaYeganeh/StockFlow/tree/final_task) branch.
 
+**🌐 Live demo:** [stockflow-7o1k.onrender.com](https://stockflow-7o1k.onrender.com) *(free hosting: the first load can take up to a minute while the API wakes up; sign in with Google to add products and orders)*
+
 ---
 
 ## ✨ Features
@@ -65,6 +67,9 @@ The starter code (by the course teacher) had the app structure, login and stubbe
 ---
 
 ## 🚀 Run locally
+
+The live version runs on Render from [`render.yaml`](render.yaml): the PHP API as a Docker service and the React app as a static site.
+
 
 You need PHP 8.1+, Composer, Node.js and a Supabase project (plus a Gemini API key for the AI features).
 
