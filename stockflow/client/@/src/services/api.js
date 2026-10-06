@@ -26,12 +26,19 @@ async function fetchApi(endpoint, options = {}) {
   const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
 
   if (!res.ok) {
+    // Plain-language messages for the errors people actually hit
+    if (res.status === 401) {
+      throw new Error('Please sign in with Google first.');
+    }
+    if (res.status === 403) {
+      throw new Error('Your account is not allowed to do this. Ask an admin for access.');
+    }
     const error = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-    throw new Error(error.error || error.message || `API error: ${res.status}`);
+    throw new Error(error.error || error.message || `Something went wrong (error ${res.status}).`);
   }
 
   const json = await res.json();
-  console.log('[API] Response from', endpoint, ':', json); // DEBUG log
+  if (import.meta.env.DEV) console.log('[API] Response from', endpoint, ':', json);
   return json;
 }
 

@@ -32,9 +32,9 @@ export default function OrderList() {
 
   const handleStatusChange = async (orderId, newStatus) => {
     let message = '';
-    if (newStatus === 'confirmed') message = 'Are you sure you want to CONFIRM this order?';
-    if (newStatus === 'cancelled') message = 'Are you sure you want to CANCEL this order?';
-    if (newStatus === 'fulfilled') message = 'Are you sure you want to FULFILL this order?';
+    if (newStatus === 'confirmed') message = 'Confirm this order?';
+    if (newStatus === 'cancelled') message = 'Cancel this order? This cannot be undone.';
+    if (newStatus === 'fulfilled') message = 'Mark this order as fulfilled? Stock will be reduced.';
 
     if (message && !window.confirm(message)) return; // ✅ confirmation alert
 
@@ -53,32 +53,29 @@ export default function OrderList() {
     }
   };
 
-  const statusColors = {
-    draft: '#888',
-    confirmed: '#4488ff',
-    fulfilled: '#44bb44',
-    cancelled: '#cc4444'
+  const STATUS_BADGE = {
+    draft: 'badge badge-muted',
+    confirmed: 'badge badge-info',
+    fulfilled: 'badge badge-success',
+    cancelled: 'badge badge-danger',
+  };
+
+  const euro = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' });
+  const money = (v) => {
+    const n = Number(String(v).replace(/,/g, ''));
+    return Number.isFinite(n) ? euro.format(n) : v;
   };
 
   return (
-    <div className="dashboard-container" style={{ textAlign: 'center' }}>
-      <h1 className="rainbow-text-title">Orders</h1>
-
-      {/* Status Filter */}
-      <div style={{ marginBottom: '20px' }}>
+    <div>
+      <div className="page-head">
+        <h2 className="rainbow-text-title" style={{ margin: 0 }}>Orders</h2>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          style={{
-            padding: '6px 12px',
-            borderRadius: '6px',
-            border: '1px solid #555',
-            backgroundColor: 'inherit',
-            color: 'inherit',
-            fontSize: '0.95em'
-          }}
+          aria-label="Filter by status"
         >
-          <option value="">All Statuses</option>
+          <option value="">All statuses</option>
           <option value="draft">Draft</option>
           <option value="confirmed">Confirmed</option>
           <option value="fulfilled">Fulfilled</option>
@@ -86,88 +83,63 @@ export default function OrderList() {
         </select>
       </div>
 
-      {/* Loading/Error */}
-      {loading && <p>Loading orders...</p>}
-      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+      {loading && <p className="empty" role="status">Loading orders…</p>}
+      {error && <p className="alert alert-error" role="alert">{error}</p>}
 
-      {/* Orders Table */}
       {!loading && !error && orders.length > 0 && (
-        <table style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          textAlign: 'left',
-          margin: '0 auto',
-          maxWidth: '900px'
-        }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #555', backgroundColor: '#dff1ef' }}>
-              <th style={{ padding: '10px' }}>Customer</th>
-              <th>Status</th>
-              <th>Total</th>
-              <th>Created</th>
-              <th>Age</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order.id} style={{ borderBottom: '1px solid #333' }}>
-                <td style={{ padding: '8px 12px' }}>{order.customer_name}</td>
-                <td>
-                  <span style={{ color: statusColors[order.status] || '#888', fontWeight: 'bold' }}>
-                    {order.status}
-                  </span>
-                </td>
-                <td>{order.total_amount}</td>
-                <td>{order.created_date || order.created_at}</td>
-                <td>{order.created_ago || '—'}</td>
-                <td style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {order.status === 'draft' && (
-                    <>
-                      <button
-                        className="auth-button"
-                        style={{ backgroundColor: '#4488ff' }}
-                        onClick={() => handleStatusChange(order.id, 'confirmed')}
-                      >
-                        Confirm
-                      </button>
-                      <button
-                        className="auth-button"
-                        style={{ backgroundColor: '#cc4444' }}
-                        onClick={() => handleStatusChange(order.id, 'cancelled')}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  )}
-
-                  {order.status === 'confirmed' && (
-                    <>
-                      <button
-                        className="auth-button"
-                        style={{ backgroundColor: '#44bb44' }}
-                        onClick={() => handleStatusChange(order.id, 'fulfilled')}
-                      >
-                        Fulfill
-                      </button>
-                      <button
-                        className="auth-button"
-                        style={{ backgroundColor: '#cc4444' }}
-                        onClick={() => handleStatusChange(order.id, 'cancelled')}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  )}
-                </td>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Status</th>
+                <th className="num">Total</th>
+                <th>Created</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order.id}>
+                  <td style={{ fontWeight: 600 }}>{order.customer_name}</td>
+                  <td>
+                    <span className={STATUS_BADGE[order.status] || 'badge badge-muted'}>
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    </span>
+                  </td>
+                  <td className="num">{money(order.total_amount)}</td>
+                  <td>{order.created_ago || order.created_date || '—'}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                      {order.status === 'draft' && (
+                        <button className="btn-primary" onClick={() => handleStatusChange(order.id, 'confirmed')}>
+                          Confirm
+                        </button>
+                      )}
+                      {order.status === 'confirmed' && (
+                        <button className="btn-primary" onClick={() => handleStatusChange(order.id, 'fulfilled')}>
+                          Fulfil
+                        </button>
+                      )}
+                      {(order.status === 'draft' || order.status === 'confirmed') && (
+                        <button className="signout-button" onClick={() => handleStatusChange(order.id, 'cancelled')}>
+                          Cancel
+                        </button>
+                      )}
+                      {(order.status === 'fulfilled' || order.status === 'cancelled') && (
+                        <span className="product-sku">No actions</span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {!loading && !error && orders.length === 0 && (
-        <p style={{ marginTop: '20px', fontStyle: 'italic', color: '#555' }}>No orders found.</p>
+        <p className="empty">No orders found.</p>
       )}
     </div>
   );

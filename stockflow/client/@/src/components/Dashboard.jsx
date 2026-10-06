@@ -28,109 +28,84 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Loading dashboard...</p>;
-  if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
-  if (!summary) return <p>No data available. Have you built the dashboard endpoint?</p>;
+  if (loading) return <p className="empty" role="status">Loading dashboard…</p>;
+  if (error) return <p className="alert alert-error" role="alert">{error}</p>;
+  if (!summary) return <p className="empty">No dashboard data yet.</p>;
 
   const { inventory, orders, low_stock_products } = summary;
 
+  const euro = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' });
+  const money = (v) => euro.format(Number(v) || 0);
+
+  const tiles = [
+    { label: 'Products', value: inventory?.total_products || 0 },
+    { label: 'Stock value', value: money(inventory?.total_value) },
+    { label: 'Low stock', value: inventory?.low_stock_count || 0, tone: 'warning' },
+    { label: 'Out of stock', value: inventory?.out_of_stock_count || 0, tone: 'danger' },
+    { label: 'Orders', value: orders?.total_orders || 0 },
+    { label: 'Revenue', value: money(orders?.total_revenue) },
+  ];
+
+  const byStatus = orders?.by_status || {};
+  const STATUS = [
+    ['draft', 'Draft', 'badge badge-muted'],
+    ['confirmed', 'Confirmed', 'badge badge-info'],
+    ['fulfilled', 'Fulfilled', 'badge badge-success'],
+    ['cancelled', 'Cancelled', 'badge badge-danger'],
+  ];
+
   return (
-    <div className="dashboard-container">
+    <div>
+      <h2 className="rainbow-text-title">Dashboard</h2>
 
-      {/* 🌈 Dashboard Title */}
-      <h1 className="rainbow-text-title">
-        Dashboard
-      </h1>
-
-      {/* Summary Cards */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '15px',
-          flexWrap: 'wrap',
-          marginBottom: '20px',
-          justifyContent: 'center'
-        }}
-      >
-
-        {/* Inventory Card */}
-        <div className="dashboard-card">
-          <h4>Inventory</h4>
-          <hr className="card-divider" />
-
-          <p>Total Products: <strong>{inventory?.total_products || 0}</strong></p>
-          <p>Total Value: <strong>{inventory?.total_value || '0.00'}</strong></p>
-          <p style={{ color: 'orange' }}>
-            Low Stock: <strong>{inventory?.low_stock_count || 0}</strong>
-          </p>
-          <p style={{ color: 'red' }}>
-            Out of Stock: <strong>{inventory?.out_of_stock_count || 0}</strong>
-          </p>
-        </div>
-
-        {/* Orders Card */}
-        <div className="dashboard-card">
-          <h4>Orders</h4>
-          <hr className="card-divider" />
-
-          <p>Total Orders: <strong>{orders?.total_orders || 0}</strong></p>
-          <p>Revenue: <strong>{orders?.total_revenue || '0.00'}</strong></p>
-
-          {orders?.by_status && (
-            <div style={{ marginTop: '10px' }}>
-              <p className="status-draft">
-                Draft: {orders.by_status.draft || 0}
-              </p>
-              <p className="status-confirmed">
-                Confirmed: {orders.by_status.confirmed || 0}
-              </p>
-              <p className="status-fulfilled">
-                Fulfilled: {orders.by_status.fulfilled || 0}
-              </p>
-              <p className="status-cancelled">
-                Cancelled: {orders.by_status.cancelled || 0}
-              </p>
-            </div>
-          )}
-        </div>
-
+      <div className="stat-grid">
+        {tiles.map((t) => (
+          <div key={t.label} className={`stat${t.tone ? ` stat--${t.tone}` : ''}`}>
+            <span className="stat__label">{t.label}</span>
+            <span className="stat__value">{t.value}</span>
+          </div>
+        ))}
       </div>
 
-      {/* Low Stock Alerts */}
-      {low_stock_products && low_stock_products.length > 0 && (
-        <div>
-          <h3 className="section-title">Low Stock Alerts</h3>
+      <h3 className="section-title">Orders by status</h3>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        {STATUS.map(([key, label, cls]) => (
+          <span key={key} className={cls}>
+            {label}: {byStatus[key] || 0}
+          </span>
+        ))}
+      </div>
 
-          <table
-            style={{
-              margin: '0 auto',
-              borderCollapse: 'collapse',
-              width: '90%',
-              maxWidth: '500px',
-              textAlign: 'center'
-            }}
-          >
+      <h3 className="section-title">Low stock alerts</h3>
+      {low_stock_products && low_stock_products.length > 0 ? (
+        <div className="table-wrap">
+          <table>
             <thead>
-              <tr style={{ borderBottom: '2px solid #555' }}>
-                <th className="rainbow-header">Product</th>
-                <th className="rainbow-header">Stock</th>
-                <th className="rainbow-header">Threshold</th>
+              <tr>
+                <th>Product</th>
+                <th className="num">In stock</th>
+                <th className="num">Reorder at</th>
+                <th>Status</th>
               </tr>
             </thead>
-
             <tbody>
               {low_stock_products.map((p, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #333' }}>
+                <tr key={i}>
                   <td>{p.name}</td>
-                  <td className={p.stock_quantity === 0 ? 'status-cancelled' : 'status-confirmed'}>
-                    {p.stock_quantity}
+                  <td className="num">{p.stock_quantity}</td>
+                  <td className="num">{p.reorder_threshold}</td>
+                  <td>
+                    {p.stock_quantity === 0
+                      ? <span className="badge badge-danger">Out of stock</span>
+                      : <span className="badge badge-warning">Reorder soon</span>}
                   </td>
-                  <td>{p.reorder_threshold}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      ) : (
+        <p className="empty">Every product is above its reorder level.</p>
       )}
     </div>
   );

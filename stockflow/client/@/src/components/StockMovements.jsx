@@ -130,7 +130,7 @@ export default function StockMovements({ onStockUpdate }) {
 
       setMessage({
         type: 'success',
-        text: `Product "${product.name}" stock ${actionText} (new qty: ${result.new_quantity})`
+        text: `${product.name}: stock ${actionText}, now ${result.new_quantity} in stock.`
       });
 
       // =========================
@@ -155,148 +155,100 @@ export default function StockMovements({ onStockUpdate }) {
     }
   };
 
-  const typeColors = {
-    in: '#44bb44',
-    out: '#cc4444',
-    adjustment: '#4488ff'
+  const TYPE_BADGE = {
+    in: { label: 'Stock in', className: 'badge badge-success' },
+    out: { label: 'Stock out', className: 'badge badge-danger' },
+    adjustment: { label: 'Adjustment', className: 'badge badge-info' },
   };
 
   return (
     <div>
-      <h2 className="rainbow-text-title">Stock Movements</h2>
+      <h2 className="rainbow-text-title">Stock movements</h2>
 
-      {/* =========================
-          MESSAGE BOX
-      ========================= */}
       {message && (
-        <div style={{
-          marginBottom: '15px',
-          padding: '12px',
-          borderRadius: '6px',
-          background: message.type === 'error' ? '#2c1f1f' : '#1f2c1f',
-          border: '1px solid #444',
-          backgroundImage: message.type === 'error'
-            ? 'linear-gradient(90deg, #e391cf, #036053)'
-            : 'linear-gradient(90deg, #e9190e, #f1c40f, #1abc9c)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          fontWeight: 'bold'
-        }}>
+        <p className={`alert ${message.type === 'error' ? 'alert-error' : 'alert-success'}`} role="status">
           {message.text}
-        </div>
+        </p>
       )}
 
-      {/* =========================
-          FORM
-      ========================= */}
-      <div style={{
-        marginBottom: '20px',
-        padding: '15px',
-        border: '1px solid #444',
-        borderRadius: '8px'
-      }}>
-        <h3>Record Movement</h3>
+      <div className="form-card">
+        <h3>Record a movement</h3>
+        <form onSubmit={handleSubmit} className="form-grid">
+          <div className="field field--wide">
+            <label htmlFor="sm-product">Product</label>
+            <select id="sm-product" name="product_id" value={form.product_id} onChange={handleChange} required>
+              <option value="">Select a product…</option>
+              {products.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.name} (in stock: {p.stock_quantity})
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            display: 'flex',
-            gap: '8px',
-            flexWrap: 'wrap',
-            alignItems: 'end'
-          }}
-        >
-          <select
-            name="product_id"
-            value={form.product_id}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select product...</option>
-            {products.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.name} (stock: {p.stock_quantity})
-              </option>
-            ))}
-          </select>
+          <div className="field">
+            <label htmlFor="sm-type">Type</label>
+            <select id="sm-type" name="movement_type" value={form.movement_type} onChange={handleChange}>
+              <option value="in">Stock in</option>
+              <option value="out">Stock out</option>
+              <option value="adjustment">Adjustment</option>
+            </select>
+          </div>
 
-          <select
-            name="movement_type"
-            value={form.movement_type}
-            onChange={handleChange}
-          >
-            <option value="in">Stock In</option>
-            <option value="out">Stock Out</option>
-            <option value="adjustment">Adjustment</option>
-          </select>
+          <div className="field">
+            <label htmlFor="sm-qty">Quantity</label>
+            <input id="sm-qty" name="quantity" type="number" min="1" value={form.quantity} onChange={handleChange} required />
+          </div>
 
-          <input
-            name="quantity"
-            type="number"
-            min="1"
-            placeholder="Qty"
-            value={form.quantity}
-            onChange={handleChange}
-            style={{ width: '70px' }}
-            required
-          />
+          <div className="field">
+            <label htmlFor="sm-reason">Reason</label>
+            <input id="sm-reason" name="reason" placeholder="e.g. Delivery" value={form.reason} onChange={handleChange} />
+          </div>
 
-          <input
-            name="reason"
-            placeholder="Reason"
-            value={form.reason}
-            onChange={handleChange}
-          />
-
-          <input
-            name="notes"
-            placeholder="Notes"
-            value={form.notes}
-            onChange={handleChange}
-          />
+          <div className="field">
+            <label htmlFor="sm-notes">Notes</label>
+            <input id="sm-notes" name="notes" placeholder="Optional" value={form.notes} onChange={handleChange} />
+          </div>
 
           <button type="submit">Record</button>
         </form>
       </div>
 
-      {/* =========================
-          TABLE
-      ========================= */}
-      {loading && <p>Loading movements...</p>}
-      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+      <h3 className="section-title">Recent movements</h3>
+      {loading && <p className="empty" role="status">Loading movements…</p>}
+      {error && <p className="alert alert-error" role="alert">{error}</p>}
+      {!loading && !error && movements.length === 0 && (
+        <p className="empty">No stock movements yet.</p>
+      )}
 
       {!loading && !error && movements.length > 0 && (
-        <table style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          backgroundColor: '#f9f9f9',
-          border: '1px solid #333',
-          textAlign: 'left'
-        }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #555' }}>
-              <th>Product</th>
-              <th>Type</th>
-              <th>Qty</th>
-              <th>Reason</th>
-              <th>When</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {movements.map(m => (
-              <tr key={m.id} style={{ borderBottom: '1px solid #333' }}>
-                <td>{m.product_name || '—'}</td>
-                <td style={{ color: typeColors[m.movement_type] || '#888' }}>
-                  {m.movement_type}
-                </td>
-                <td>{m.quantity}</td>
-                <td>{m.reason || '—'}</td>
-                <td>{m.created_ago || m.created_date || '—'}</td>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Type</th>
+                <th className="num">Qty</th>
+                <th>Reason</th>
+                <th>When</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {movements.map(m => {
+                const badge = TYPE_BADGE[m.movement_type] || { label: m.movement_type, className: 'badge badge-muted' };
+                return (
+                  <tr key={m.id}>
+                    <td>{m.product_name || '—'}</td>
+                    <td><span className={badge.className}>{badge.label}</span></td>
+                    <td className="num">{m.quantity}</td>
+                    <td>{m.reason || '—'}</td>
+                    <td>{m.created_ago || m.created_date || '—'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

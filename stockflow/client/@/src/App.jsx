@@ -22,11 +22,11 @@ import { api } from './services/api';
 
 const TABS = [
   { id: 'products', label: 'Products', requiresAuth: false },
-  { id: 'new-product', label: '+ Product', requiresAuth: true },
+  { id: 'new-product', label: '+ New product', requiresAuth: true },
   { id: 'orders', label: 'Orders', requiresAuth: true },
-  { id: 'new-order', label: '+ Order', requiresAuth: true },
+  { id: 'new-order', label: '+ New order', requiresAuth: true },
   { id: 'stock', label: 'Stock', requiresAuth: true },
-  { id: 'ai', label: 'AI', requiresAuth: true },
+  { id: 'ai', label: 'AI assistant', requiresAuth: true },
   { id: 'dashboard', label: 'Dashboard', requiresAuth: true },
 ];
 
@@ -72,70 +72,80 @@ function App() {
 
   // Show loading while checking auth
   if (authLoading) {
-    return <p>Loading...</p>;
+    return <p className="empty">Loading…</p>;
   }
 
   // Filter tabs based on auth state
   const visibleTabs = TABS.filter((tab) => !tab.requiresAuth || user);
 
   return (
-    <div>
-      {/* Header with auth controls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <h1 className="rainbow-text">StockFlow</h1>
-        <div>
-          {user ? (
-            <span>
-              {user.email}{' '}
-      <button
-          onClick={handleLogout}
-          className="signout-button"
-            >
-            Sign Out
-      </button>               
-            </span>
-          ) : (
-            <Login />
-          )}
+    <>
+      <header className="app-header">
+        <div className="app-header__inner">
+          <h1 className="brand">
+            <span className="brand__logo" aria-hidden="true">▤</span>
+            StockFlow
+          </h1>
+          <div className="account">
+            {user ? (
+              <>
+                <span className="account__email">{user.email}</span>
+                <button onClick={handleLogout} className="signout-button">
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <Login />
+            )}
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Tab navigation */}
-      <nav style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        {visibleTabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              fontWeight: activeTab === tab.id ? 'bold' : 'normal',
-              borderColor: activeTab === tab.id ? '#646cff' : 'transparent',
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
+      {visibleTabs.length > 1 && (
+        <nav className="app-tabs" aria-label="Sections">
+          <div className="app-tabs__inner">
+            {visibleTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`tab${activeTab === tab.id ? ' tab--active' : ''}`}
+                aria-current={activeTab === tab.id ? 'page' : undefined}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </nav>
+      )}
 
-{/* Tab content */}
-<div
-  style={{
-    padding: '20px',
-    backgroundColor: '#fdfdfd', // off-white background
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px #1abc9c',
-    marginBottom: '20px',
-    transition: 'all 0.3s ease',
-  }}
-  >
-  {activeTab === 'products' && <ProductList />}
-  {activeTab === 'new-product' && <ProductForm onSaved={() => setActiveTab('products')} />}
-  {activeTab === 'orders' && <OrderList />}
-  {activeTab === 'new-order' && <OrderForm onCreated={() => setActiveTab('orders')} />}
-  {activeTab === 'stock' && <StockMovements />}
-  {activeTab === 'ai' && <AIPanel />}
-  {activeTab === 'dashboard' && <Dashboard />}
-  </div>
-    </div>
+      <main className="app-main">
+        {!user && (
+          <div className="alert alert-info signed-out-note">
+            <span>
+              You're browsing the product list. Sign in with Google to record
+              stock, manage orders and use the AI assistant.
+            </span>
+          </div>
+        )}
+
+        <div className="panel">
+          {activeTab === 'products' && <ProductList />}
+          {activeTab === 'new-product' && <ProductForm onSaved={() => setActiveTab('products')} />}
+          {activeTab === 'orders' && <OrderList />}
+          {activeTab === 'new-order' && <OrderForm onCreated={() => setActiveTab('orders')} />}
+          {activeTab === 'stock' && <StockMovements />}
+          {activeTab === 'ai' && <AIPanel />}
+          {activeTab === 'dashboard' && <Dashboard />}
+        </div>
+      </main>
+
+      <footer className="app-footer">
+        StockFlow · PHP (Slim) API, React and Supabase ·{' '}
+        <a href="https://github.com/BitaYeganeh/StockFlow/tree/final_task" target="_blank" rel="noopener noreferrer">
+          Source code
+        </a>
+      </footer>
+    </>
   );
 }
 

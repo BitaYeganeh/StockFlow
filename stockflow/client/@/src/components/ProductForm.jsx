@@ -94,38 +94,16 @@ export default function ProductForm({ product = null, onSaved = () => {} }) {
   };
 
   return (
-    <div style={{ maxWidth: '700px', textAlign: 'center' }}>
-      <h3 style={{
-          fontSize: '2rem',
-          fontWeight: 'bold',
-          background: 'linear-gradient(90deg, red, rgb(234, 173, 58), yellow, #1abc9c, rgb(65, 169, 224))',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          animation: 'rainbow 5s linear infinite',
-          marginBottom: '10px',
-          marginTop: '10px',
-        }}
->{isEdit ? 'Edit Product' : 'New Product'}</h3>
+    <div className="form-page">
+      <h2 className="rainbow-text-title">{isEdit ? 'Edit Product' : 'New Product'}</h2>
 
       {message && (
-        <p style={{ color: message.type === 'error' ? 'red' : 'green' }}>
+        <p className={`alert ${message.type === 'error' ? 'alert-error' : 'alert-success'}`} role="status">
           {message.text}
         </p>
       )}
 
-      <form onSubmit={handleSubmit} 
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '15px',
-          maxWidth: '300px',
-          margin: '0 auto',
-          padding: '20px',
-          borderRadius: '12px',
-          border: '3px solid #0bb5a9',
-          backgroundColor: '#f9f9f9',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        }}>
+      <form onSubmit={handleSubmit} className="form-card form-stack">
         <input name="name" placeholder="Product name *" value={form.name} onChange={handleChange} required />
         <input name="sku" placeholder="SKU (e.g. SKU-1234) *" value={form.sku} onChange={handleChange} required />
         <input name="price" type="number" step="0.01" placeholder="Price *" value={form.price} onChange={handleChange} required />
@@ -136,7 +114,7 @@ export default function ProductForm({ product = null, onSaved = () => {} }) {
               For now, students can hardcode or ignore this field. */}
         </select>
         {/* Image upload */}
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <label className="field">
           <span>Product Image</span>
           <input
             type="file"
@@ -152,7 +130,7 @@ export default function ProductForm({ product = null, onSaved = () => {} }) {
             <img
               src={imagePreview}
               alt="Preview"
-              style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: '8px', border: '1px solid #444444' }}
+              style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: '8px', border: '1px solid var(--border)' }}
             />
           </div>
         )}

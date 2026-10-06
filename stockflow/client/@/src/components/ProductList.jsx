@@ -1,11 +1,32 @@
 import { useState, useEffect } from 'react';
 import { api, assetUrl } from '../services/api';
-import StockMovements from './StockMovements';
+
+const CATEGORIES = [
+  'Audio',
+  'Cables & Adapters',
+  'Displays',
+  'Keyboards',
+  'Mice & Peripherals',
+  'Power & Charging',
+];
+
+const STOCK_BADGE = {
+  in_stock: { label: 'In stock', className: 'badge badge-success' },
+  low_stock: { label: 'Low stock', className: 'badge badge-warning' },
+  out_of_stock: { label: 'Out of stock', className: 'badge badge-danger' },
+};
+
+const euro = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' });
+// The API sends prices as text like "1,000.00"
+const formatPrice = (price) => {
+  const value = Number(String(price).replace(/,/g, ''));
+  return Number.isFinite(value) ? euro.format(value) : price;
+};
 
 // =========================
 // Pagination Component
 // =========================
-const Pagination = ({ page, totalPages, setPage, limit, setLimit }) => {
+const Pagination = ({ page, totalPages, setPage, limit, setLimit, total }) => {
   const getPageNumbers = () => {
     const pages = [];
     if (totalPages <= 7) {
@@ -19,40 +40,46 @@ const Pagination = ({ page, totalPages, setPage, limit, setLimit }) => {
     return pages;
   };
 
+  const from = total === 0 ? 0 : (page - 1) * limit + 1;
+  const to = Math.min(page * limit, total);
+
   return (
-    <div style={{ margin: '15px 0', display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
-      <select value={limit} onChange={(e) => { setPage(1); setLimit(Number(e.target.value)); }}>
-        <option value={10}>10 / page</option>
-        <option value={25}>25 / page</option>
-        <option value={40}>40 / page</option>
-      </select>
-
-      <button onClick={() => setPage(page - 1)} disabled={page === 1}>◀</button>
-
-      {getPageNumbers().map((p, idx) => (
-        <button
-          key={idx}
-          onClick={() => typeof p === 'number' && setPage(p)}
-          disabled={typeof p !== 'number'}
-          style={{
-            fontWeight: p === page ? 'bold' : 'normal',
-            background: p === page ? '#1abc9c' : '#ecf0f1',
-            color: p === page ? '#fff' : '#2c3e50',
-            border: '1px solid #444',
-            padding: '5px 10px',
-            borderRadius: '6px',
-            cursor: 'pointer'
-          }}
-        >
-          {p}
-        </button>
-      ))}
-
-      <button onClick={() => setPage(page + 1)} disabled={page === totalPages}>▶</button>
-
-      <span style={{ marginLeft: '10px' }}>
-        Page {page} of {totalPages}
+    <div className="pagination">
+      <span>
+        Showing {from}–{to} of {total}
       </span>
+
+      {totalPages > 1 && (
+        <div className="pagination__pages">
+          <button onClick={() => setPage(page - 1)} disabled={page === 1} aria-label="Previous page">
+            ‹
+          </button>
+          {getPageNumbers().map((p, idx) => (
+            <button
+              key={idx}
+              onClick={() => typeof p === 'number' && setPage(p)}
+              disabled={typeof p !== 'number'}
+              className={p === page ? 'is-current' : undefined}
+              aria-current={p === page ? 'page' : undefined}
+            >
+              {p}
+            </button>
+          ))}
+          <button onClick={() => setPage(page + 1)} disabled={page === totalPages} aria-label="Next page">
+            ›
+          </button>
+        </div>
+      )}
+
+      <select
+        value={limit}
+        onChange={(e) => { setPage(1); setLimit(Number(e.target.value)); }}
+        aria-label="Products per page"
+      >
+        <option value={10}>10 per page</option>
+        <option value={25}>25 per page</option>
+        <option value={40}>40 per page</option>
+      </select>
     </div>
   );
 };
@@ -102,125 +129,109 @@ export default function ProductList() {
 
   const totalPages = Math.ceil(total / limit);
 
-  // =========================
-  // Refresh products after stock updates
-  // =========================
-  const updateProductStock = () => {
-    fetchProducts();
-  };
-
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2rem' }}>
+    <section>
+      <div className="page-head">
+        <div>
+          <h2>Products</h2>
+          <p>Stock levels update when stock is recorded or orders are fulfilled.</p>
+        </div>
 
-      {/* ✅ Stock Movements */}
-      <StockMovements onStockUpdate={updateProductStock} />
-      {/* 🌈 Page Title */}
-      <h1 className="rainbow-text-title" style={{ textAlign: 'center', marginBottom: '20px' }}>
-        Products
-      </h1>
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={search}
-          onChange={(e) => { setPage(1); setSearch(e.target.value); }}
-        />
-
-        <select value={category} onChange={(e) => { setPage(1); setCategory(e.target.value); }}>
-          <option value="">All Categories</option>
-          <option value="Audio">Audio</option>
-          <option value="Cables & Adapters">Cables & Adapters</option>
-          <option value="Displays">Displays</option>
-          <option value="Keyboards">Keyboards</option>
-          <option value="Mice & Peripherals">Mice & Peripherals</option>
-          <option value="Power & Charging">Power & Charging</option>
-        </select>
-
-        <select value={status} onChange={(e) => { setPage(1); setStatus(e.target.value); }}>
-          <option value="active">Active</option>
-          <option value="archived">Archived</option>
-          <option value="">All</option>
-        </select>
+        <div className="filters">
+          <input
+            type="search"
+            placeholder="Search by name…"
+            aria-label="Search products"
+            value={search}
+            onChange={(e) => { setPage(1); setSearch(e.target.value); }}
+          />
+          <select
+            value={category}
+            onChange={(e) => { setPage(1); setCategory(e.target.value); }}
+            aria-label="Category"
+          >
+            <option value="">All categories</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <select
+            value={status}
+            onChange={(e) => { setPage(1); setStatus(e.target.value); }}
+            aria-label="Status"
+          >
+            <option value="active">Active</option>
+            <option value="archived">Archived</option>
+            <option value="">All</option>
+          </select>
+        </div>
       </div>
 
-<div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: '15px' }}>
-  <Pagination 
-    page={page} 
-    totalPages={totalPages} 
-    setPage={setPage} 
-    limit={limit} 
-    setLimit={setLimit} 
-  />
-</div>     
+      {error && <p className="alert alert-error" role="alert">{error}</p>}
 
-      {/* Loading & Error */}
-      {loading && <p style={{ textAlign: 'center' }}>Loading products...</p>}
-      {error && <p style={{ color: 'red', textAlign: 'center' }}>Error: {error}</p>}
-
-      {/* =========================
-          Products Table
-      ========================= */}
-      {!loading && !error && (
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', border: '1px solid #444' }}>
-          <thead>
-            <tr style={{ border: '1px solid #444', backgroundColor: '#f0f0f0' }}>
-              <th></th>
-              <th>Name</th>
-              <th>SKU</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map(product => (
-              <tr key={product.id} style={{ borderBottom: '1px solid #ddd' }}>
-                <td>{product.image_url ? <img src={assetUrl(product.image_url)} alt="" style={{ width: 40, borderRadius: '4px' }} /> : '—'}</td>
-                <td>{product.name}</td>
-                <td>{product.sku}</td>
-                <td>{product.category_name}</td>
-                <td>{product.price}</td>
-                <td>{product.stock_quantity}</td>
-                {/* Colored Status */}
-                <td>
-                  <span
-                    style={{
-                       padding: '2px 6px',
-                       borderRadius: '4px',
-                       textTransform: 'capitalize',
-                       fontWeight: 'bold',
-                       fontSize: '0.85em',
-                      color:
-                      product.stock_status === 'in_stock'
-                      ? 'green'
-                      : product.stock_status === 'low_stock'
-                      ? 'orange'
-                      : 'red', // out_of_stock
-                      backgroundColor: 'transparent', // optional
-                    }}
-                  >
-                    {product.stock_status.replace('_', ' ')}
-                  </span>
-                </td>
+      {loading ? (
+        <p className="empty" role="status">Loading products… (the free server can take up to a minute to wake up)</p>
+      ) : !error && products.length === 0 ? (
+        <p className="empty">No products match your filters.</p>
+      ) : !error && (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th className="num">Price</th>
+                <th className="num">Stock</th>
+                <th>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {products.map((product) => {
+                const badge = STOCK_BADGE[product.stock_status] || {
+                  label: product.stock_status,
+                  className: 'badge badge-muted',
+                };
+                return (
+                  <tr key={product.id}>
+                    <td>
+                      <div className="product-cell">
+                        {product.image_url ? (
+                          <img className="thumb" src={assetUrl(product.image_url)} alt="" />
+                        ) : (
+                          <span className="thumb" aria-hidden="true">
+                            {product.name.slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
+                        <div>
+                          <div className="product-name">{product.name}</div>
+                          <div className="product-sku">{product.sku}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{product.category_name}</td>
+                    <td className="num">{formatPrice(product.price)}</td>
+                    <td className="num">{product.stock_quantity}</td>
+                    <td>
+                      <span className={badge.className}>{badge.label}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      {!loading && totalPages > 1 && (
-<div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: '15px' }}>
-  <Pagination 
-    page={page} 
-    totalPages={totalPages} 
-    setPage={setPage} 
-    limit={limit} 
-    setLimit={setLimit} 
-  />
-</div>
+      {!loading && !error && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          setPage={setPage}
+          limit={limit}
+          setLimit={setLimit}
+          total={total}
+        />
       )}
-    </div>
+    </section>
   );
 }

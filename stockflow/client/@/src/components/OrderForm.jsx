@@ -111,42 +111,18 @@ export default function OrderForm({ onCreated = () => {} }) {
   };
 
   return (
-    <div style={{ maxWidth: '700px', margin: '0 auto', textAlign: 'center' }}>
+    <div className="form-page">
       {/* Rainbow Title */}
-      <h3
-        style={{
-          fontSize: '2rem',
-          fontWeight: 'bold',
-          background: 'linear-gradient(90deg, red, rgb(234, 173, 58), yellow, #1abc9c, rgb(65, 169, 224))',
-          backgroundSize: '400% 400%',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          animation: 'rainbow 5s linear infinite',
-          marginBottom: '20px',
-        }}
-      >
+      <h2 className="rainbow-text-title">
         New Order
-      </h3>
+      </h2>
 
       {/* --- Show success or error message --- */}
       {message && (
-        <p style={{ color: message.type === 'error' ? 'red' : 'green' }}>{message.text}</p>
+        <p className={`alert ${message.type === 'error' ? 'alert-error' : 'alert-success'}`} role="status">{message.text}</p>
       )}
 
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '15px',
-          maxWidth: '400px',
-          margin: '0 auto',
-          padding: '20px',
-          borderRadius: '12px',
-          border: '1px solid black',
-          backgroundColor: '#f9f9f9',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        }}
+      <form onSubmit={handleSubmit} className="form-card form-stack"
       >
         {/* Customer name input */}
         <input
@@ -164,7 +140,7 @@ export default function OrderForm({ onCreated = () => {} }) {
           rows={2}
         />
 
-        <h4 style={{ borderBottom: '2px solid #075751', paddingBottom: '5px', marginBottom: '10px' }}>Items</h4>
+        <h3 className="form-subtitle">Items</h3>
 
         {/* Line items */}
         {items.map((item, i) => (
@@ -227,7 +203,7 @@ export default function OrderForm({ onCreated = () => {} }) {
         <button
           type="button"
           className="auth-button"
-          style={{ width: 'fit-content', margin: '0 auto', display: 'block' }}
+          style={{ width: 'fit-content' }}
           onClick={addItem}
         >
           + Add Item
@@ -241,7 +217,7 @@ export default function OrderForm({ onCreated = () => {} }) {
           type="submit"
           className="auth-button"
           disabled={saving}
-          style={{ width: '10rem', margin: '0 auto', display: 'block' }}
+         
         >
           {saving ? 'Creating...' : 'Create Order'}
         </button>

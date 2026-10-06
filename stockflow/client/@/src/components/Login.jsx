@@ -27,8 +27,8 @@ export default function Login() {
   };
 
   return (
-    <button onClick={handleLogin} className="auth-button">
-      Sign in with Google
+    <button onClick={handleLogin} className="auth-button" disabled={loading}>
+      {loading ? 'Opening Google…' : 'Sign in with Google'}
     </button>
   );
 }
