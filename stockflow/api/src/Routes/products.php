@@ -5,6 +5,22 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use StockFlow\Auth\SupabaseAuth;
 use StockFlow\Middleware\AuthMiddleware;
 
+/**
+ * Turn a Supabase error into a message and status a person can act on.
+ * Returns [httpStatus, message].
+ */
+function friendlyProductError(Exception $e, string $fallback): array
+{
+    $msg = $e->getMessage();
+    if (str_contains($msg, 'duplicate key') && str_contains($msg, 'sku')) {
+        return [409, 'A product with this SKU already exists (it may be archived). Please use a different SKU.'];
+    }
+    if (str_contains($msg, 'row-level security') || str_contains($msg, '(403)')) {
+        return [403, 'Your account is not allowed to change products. Ask an admin for access.'];
+    }
+    return [500, $fallback];
+}
+
 // ============================================================
 // GET /api/products — List products
 // ============================================================
@@ -177,12 +193,13 @@ $app->post('/api/products', function (Request $request, Response $response) {
     } catch (Exception $e) {
         error_log($e->getMessage());
 
-        $response->getBody()->write(json_encode([
-            'error' => 'Insert failed',
-            'details' => $e->getMessage()
-        ]));
+        [$status, $message] = friendlyProductError($e, 'Insert failed');
+$response->getBody()->write(json_encode([
+    'error' => $message,
+    'details' => $e->getMessage()
+]));
 
-        return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+return $response->withStatus($status)->withHeader('Content-Type', 'application/json');
     }
 
 })->add(new AuthMiddleware());
