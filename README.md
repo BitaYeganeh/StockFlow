@@ -72,7 +72,9 @@ The starter code (by the course teacher) had the app structure, login and stubbe
 ### Bugs found and fixed while deploying
 
 - Every product showed **"Uncategorized"**: the API read Supabase's joined category as a list, but it is a single object
-- Uploaded **product images did not load** in the browser: the API saved `/uploads/...` paths relative to the API, so the React app looked for them on its own address. New uploads now get the full API address, and older paths are fixed in the app
+- Uploaded **product images did not load**: they were saved on the server's disk, which Render wipes at every deploy, under an address the browser could not reach. Images now go to **Supabase Storage** (only JPG/PNG/WebP/GIF up to 5 MB)
+- The **category dropdown in the product form was empty** (left as a to-do in the starter code), so new products were always "Uncategorized". Added a `GET /api/categories` endpoint and made the category required
+- Creating a product with an existing SKU only said "Insert failed"; it now explains that the SKU is already in use
 - The API **crashed without a `.env` file** (as on a server); it now also reads settings from the environment
 - The developer test page `test.php` **showed parts of the keys** and is no longer shipped; error details are hidden in production
 
