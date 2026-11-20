@@ -1,0 +1,213 @@
+#root {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: left;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+table th,
+table td {
+  padding: 8px 12px;
+}
+
+input, select, textarea {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #555;
+  background: inherit;
+  color: inherit;
+  font-size: 0.9em;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid #646cff;
+  border-color: transparent;
+}
+/* in App.css or your global CSS file */
+.rainbow-text {
+  font-size: 4.2rem; /* adjust as needed */
+  font-weight: bold;
+  margin: 0;
+  background: linear-gradient(90deg, red, rgb(234, 173, 58), yellow, #1abc9c, rgb(65, 169, 224));
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rainbow 5s linear infinite;
+}
+.rainbow-text-title {
+  font-size: 2rem; /* adjust as needed */
+  font-weight: bold;
+  margin: 0;
+  margin-bottom: 20px;
+  background: linear-gradient(90deg, rgb(208, 7, 124),#1abc9c, rgb(65, 169, 224));
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rainbow 5s linear infinite;
+  text-align: center;
+}
+
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.signout-button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  background: #1abc9c;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.signout-button:hover {
+  background: red;
+  color: #fff;
+}
+
+/* Reusable auth button style */
+.auth-button {
+  margin: 0 auto;
+  padding: 5px 10px;
+  width: 7rem;
+  background: #1abc9c;      /* Base color */
+  color: #fff;
+  border-color: #000000;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+/* Hover effect — turns red */
+.auth-button:hover {
+  background: red;
+  color: #fff;
+}
+/* ============================= */
+/* DASHBOARD CARD (UPGRADED) */
+/* ============================= */
+
+.dashboard-card {
+  padding: 18px;
+  border-radius: 12px;
+  min-width: 220px;
+  text-align: center;
+
+  /* theme */
+  background: #dff1ef;
+  border: 1px solid #0cd2c1;
+
+  /* soft shadow */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  /* smooth hover */
+  transition: all 0.25s ease;
+}
+
+/* ✨ hover effect */
+.dashboard-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(12, 210, 193, 0.5);
+}
+
+/* divider line */
+.card-divider {
+  border: none;
+  border-top: 2px solid #075751;
+  margin: 10px auto 18px;
+  width: 60%;
+}
+
+/* status colors */
+.status-draft {
+  color: gray;
+}
+
+.status-confirmed {
+  color: #646cff;
+}
+
+.status-fulfilled {
+  color: #1abc9c;
+}
+
+.status-cancelled {
+  color: red;
+}
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  text-align: center;
+}
+tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+thead {
+  background-color: #84c8bb;
+  font-weight: bold;
+}
+.section-title {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  margin-top: 40px;
+  text-align: center;
+}
+
+
+/* ============================= */
+/* NOTICES (errors / success / info) */
+/* ============================= */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 15px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid;
+  border-left-width: 5px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.notice-text {
+  flex: 1;
+}
+
+.notice-error {
+  background: #fdecec;
+  border-color: #d93025;
+  color: #8a1c14;
+}
+
+.notice-success {
+  background: #e6f7f2;
+  border-color: #1abc9c;
+  color: #0b5345;
+}
+
+.notice-info {
+  background: #eaf3fb;
+  border-color: #41a9e0;
+  color: #154360;
+}
+
+.notice-close {
+  padding: 0 6px;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.3em;
+  line-height: 1;
+  cursor: pointer;
+}
