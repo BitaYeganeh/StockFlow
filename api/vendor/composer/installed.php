@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'stockflow/api',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-final_task',
+        'version' => 'dev-final_task',
+        'reference' => 'f2f6fc5bbefa6492ceef913f64054620f68e9680',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -140,9 +140,9 @@
             'dev_requirement' => false,
         ),
         'stockflow/api' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-final_task',
+            'version' => 'dev-final_task',
+            'reference' => 'f2f6fc5bbefa6492ceef913f64054620f68e9680',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

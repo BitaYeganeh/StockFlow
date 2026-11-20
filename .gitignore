@@ -2,3 +2,4 @@
 .env
 # Render build output
 client-dist/
+.vscode/
